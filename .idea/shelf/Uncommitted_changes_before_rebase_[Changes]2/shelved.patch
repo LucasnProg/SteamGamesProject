@@ -1,0 +1,1701 @@
+Index: src/main/java/org/example/OrdenationsByPrice.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.example;\r\n\r\nimport com.opencsv.CSVReader;\r\nimport com.opencsv.CSVWriter;\r\nimport org.apache.commons.csv.CSVFormat;\r\nimport org.apache.commons.csv.CSVParser;\r\nimport org.apache.commons.csv.CSVPrinter;\r\nimport org.apache.commons.csv.CSVRecord;\r\n\r\nimport java.io.*;\r\nimport java.nio.file.Path;\r\nimport java.nio.file.Paths;\r\nimport java.sql.SQLOutput;\r\nimport java.time.LocalDate;\r\nimport java.time.format.DateTimeFormatter;\r\nimport java.util.List;\r\n\r\npublic class OrdenationsByPrice {\r\n    public static CSVRecord[] selectionSortByDates(CSVRecord[] array){\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n        for (int index = 0; index < array.length-1; index++) {\r\n            int minorIndex = index;\r\n            for (int secondIndex = index + 1; secondIndex < array.length; secondIndex++) {\r\n                LocalDate date1 = LocalDate.parse(array[secondIndex].get(2), formatDate);\r\n                LocalDate date2 = LocalDate.parse(array[minorIndex].get(2), formatDate);\r\n                if (date1.isBefore(date2)) {\r\n                    minorIndex = secondIndex;\r\n                }\r\n            }\r\n            CSVRecord temp = array[minorIndex];\r\n            array[minorIndex] = array[index];\r\n            array[index] = temp;\r\n        }\r\n        return array;\r\n    }\r\n    public static CSVRecord[] inserrtionSortByDates(CSVRecord[] array){\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n        for (int index = 1; index < array.length; index++) {\r\n            CSVRecord minor = array[index];\r\n            int secondIndex = index - 1;\r\n            LocalDate minorValue = LocalDate.parse(minor.get(2), formatDate);\r\n\r\n            while (secondIndex >= 0) {\r\n                LocalDate date = LocalDate.parse(array[secondIndex].get(2), formatDate);\r\n\r\n                if (date.isAfter(minorValue)) {\r\n                    array[secondIndex + 1] = array[secondIndex];\r\n                } else {\r\n                    break;\r\n                }\r\n                secondIndex--;\r\n            }\r\n\r\n            array[secondIndex + 1] = minor;\r\n        }\r\n        return array;\r\n    }\r\n    public static CSVRecord[] mergeSortByDates(CSVRecord[] array) {\r\n        if (array.length <= 1) {\r\n            return array;\r\n        }\r\n        int mid = array.length / 2;\r\n        CSVRecord[] left = new CSVRecord[mid];\r\n        CSVRecord[] right = new CSVRecord[array.length - mid];\r\n\r\n        System.arraycopy(array, 0, left, 0, mid);\r\n        System.arraycopy(array, mid, right, 0, array.length - mid);\r\n\r\n        mergeSortByDates(left);\r\n        mergeSortByDates(right);\r\n\r\n        merge(array, left, right);\r\n\r\n        return array;\r\n    }\r\n\r\n    private static void merge(CSVRecord[] array, CSVRecord[] left, CSVRecord[] right) {\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        int i = 0, j = 0, k = 0;\r\n\r\n        while (i < left.length && j < right.length) {\r\n            LocalDate leftDate = LocalDate.parse(left[i].get(2), formatDate);\r\n            LocalDate rightDate = LocalDate.parse(right[j].get(2), formatDate);\r\n\r\n            if (leftDate.isBefore(rightDate) || leftDate.isEqual(rightDate)) {\r\n                array[k++] = left[i++];\r\n            } else {\r\n                array[k++] = right[j++];\r\n            }\r\n        }\r\n\r\n        while (i < left.length) {\r\n            array[k++] = left[i++];\r\n        }\r\n\r\n        while (j < right.length) {\r\n            array[k++] = right[j++];\r\n        }\r\n    }\r\n\r\n    public static int partition(CSVRecord[] array, int first, int last) {\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        LocalDate pivot = LocalDate.parse(array[last].get(2), formatDate);\r\n        int iterator = first - 1;\r\n\r\n        for (int index = first; index < last; index++) {\r\n            LocalDate currentDate = LocalDate.parse(array[index].get(2), formatDate);\r\n\r\n            if (currentDate.isBefore(pivot) || currentDate.isEqual(pivot)) {\r\n                iterator++;\r\n                CSVRecord temp = array[iterator];\r\n                array[iterator] = array[index];\r\n                array[index] = temp;\r\n            }\r\n        }\r\n\r\n        CSVRecord temp = array[iterator + 1];\r\n        array[iterator + 1] = array[last];\r\n        array[last] = temp;\r\n\r\n        return iterator + 1;\r\n    }\r\n\r\n    public static CSVRecord[] quickSortByDates(CSVRecord[] array, int first, int last) {\r\n        if (first < last) {\r\n            int pivotPosition = partition(array, first, last);\r\n\r\n            quickSortByDates(array, first, pivotPosition - 1);\r\n            quickSortByDates(array, pivotPosition + 1, last);\r\n        }\r\n        return array;\r\n    }\r\n\r\n    public static int medianOf3(CSVRecord[] array, int first, int mid, int last) {\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        LocalDate firstDate = LocalDate.parse(array[first].get(2), formatDate);\r\n        LocalDate midDate = LocalDate.parse(array[mid].get(2), formatDate);\r\n        LocalDate lastDate = LocalDate.parse(array[last].get(2), formatDate);\r\n\r\n        if ((firstDate.isBefore(midDate) && midDate.isBefore(lastDate)) || (lastDate.isBefore(midDate) && midDate.isBefore(firstDate))) {\r\n            return mid;\r\n        } else if ((midDate.isBefore(firstDate) && firstDate.isBefore(lastDate)) || (lastDate.isBefore(firstDate) && firstDate.isBefore(midDate))) {\r\n            return first;\r\n        } else {\r\n            return last;\r\n        }\r\n    }\r\n\r\n    public static int partitionMedian3(CSVRecord[] array, int first, int last) {\r\n        int mid = (first + last) / 2;\r\n        int median = medianOf3(array, first, mid, last);\r\n\r\n        CSVRecord temp = array[median];\r\n        array[median] = array[last];\r\n        array[last] = temp;\r\n\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n        LocalDate pivot = LocalDate.parse(array[last].get(2), formatDate);\r\n\r\n        int iterator = first - 1;\r\n\r\n        for (int index = first; index < last; index++) {\r\n            LocalDate currentDate = LocalDate.parse(array[index].get(2), formatDate);\r\n\r\n            if (currentDate.isBefore(pivot) || currentDate.isEqual(pivot)) {\r\n                iterator++;\r\n                CSVRecord swapTemp = array[iterator];\r\n                array[iterator] = array[index];\r\n                array[index] = swapTemp;\r\n            }\r\n        }\r\n\r\n        CSVRecord swapTemp = array[iterator + 1];\r\n        array[iterator + 1] = array[last];\r\n        array[last] = swapTemp;\r\n\r\n        return iterator + 1;\r\n    }\r\n\r\n    public static CSVRecord[] quickSortByDatesMedianOf3(CSVRecord[] array, int first, int last) {\r\n        if (first < last) {\r\n            int pivotPosition = partitionMedian3(array, first, last);\r\n            quickSortByDatesMedianOf3(array, first, pivotPosition - 1);\r\n            quickSortByDatesMedianOf3(array, pivotPosition + 1, last);\r\n        }\r\n\r\n        return array;\r\n    }\r\n\r\n    public static CSVRecord[] heapSortByDates(CSVRecord[] array) {\r\n        int n = array.length;\r\n\r\n        for (int i = n / 2 - 1; i >= 0; i--) {\r\n            heapify(array, n, i);\r\n        }\r\n\r\n        for (int i = n - 1; i > 0; i--) {\r\n            CSVRecord temp = array[i];\r\n            array[i] = array[0];\r\n            array[0] = temp;\r\n\r\n            heapify(array, i, 0);\r\n        }\r\n        return array;\r\n    }\r\n\r\n    private static void heapify(CSVRecord[] array, int n, int i) {\r\n        int largest = i;\r\n        int left = 2 * i + 1;\r\n        int right = 2 * i + 2;\r\n\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        if (left < n && LocalDate.parse(array[left].get(2), formatDate).isAfter(LocalDate.parse(array[largest].get(2), formatDate))) {\r\n            largest = left;\r\n        }\r\n\r\n        if (right < n && LocalDate.parse(array[right].get(2), formatDate).isAfter(LocalDate.parse(array[largest].get(2), formatDate))) {\r\n            largest = right;\r\n        }\r\n\r\n        if (largest != i) {\r\n            CSVRecord swap = array[i];\r\n            array[i] = array[largest];\r\n            array[largest] = swap;\r\n\r\n            heapify(array, n, largest);\r\n        }\r\n    }\r\n    public static CSVRecord[] getArray(Path filePath) throws IOException {\r\n        File file = filePath.toFile();\r\n\r\n        try (\r\n                Reader reader = new FileReader(file);\r\n                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());\r\n        ) {\r\n            List<CSVRecord> records = csvParser.getRecords();\r\n\r\n            CSVRecord[] array = new CSVRecord[records.size()];\r\n            for (int i = 0; i < records.size(); i++) {\r\n                array[i] = records.get(i);\r\n            }\r\n            return array;\r\n        } catch (IOException e) {\r\n            System.out.println(e.getMessage());\r\n            return null;\r\n        }\r\n\r\n    }\r\n    public static void writeToCvs (String fileName,CSVRecord[] array) throws IOException {\r\n        Path databasePath = Paths.get(\"src\\\\main\\\\java\\\\database\");\r\n        File outputFile = new File(databasePath.toString(), fileName);\r\n        File fileToGetHeader = new File(databasePath.toString(),\"portuguese_supported_games.csv\");\r\n\r\n        try (\r\n                Writer writer = new FileWriter(outputFile);\r\n                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);\r\n                Reader reader = new FileReader(fileToGetHeader);\r\n                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());\r\n        ) {\r\n            printer.printRecord(csvParser.getHeaderMap().keySet());\r\n            for (int i = 0; i < array.length; i++) {\r\n                printer.printRecord(array[i]);\r\n            }\r\n        }catch (IOException e) {\r\n            System.out.println(e.getMessage());\r\n        }\r\n    }\r\n    public static void reverseArray(CSVRecord[] arrayWorstCase){\r\n        int start = 0;\r\n        int end = arrayWorstCase.length - 1;\r\n\r\n        while (start < end) {\r\n            CSVRecord swap = arrayWorstCase[start];\r\n            arrayWorstCase[start] = arrayWorstCase[end];\r\n            arrayWorstCase[end] = swap;\r\n\r\n            start++;\r\n            end--;\r\n        }\r\n    }\r\n    public static void main(String[] args) throws IOException {\r\n\r\n        Path pathToGamesFormated = Paths.get(\"src\\\\main\\\\java\\\\database\\\\games_formated_release_data.csv\");\r\n        CSVRecord[] arrayToOrder = getArray(pathToGamesFormated);\r\n        assert arrayToOrder != null;\r\n        long startTime, endTime, duration;\r\n        CSVRecord[] ordenArray;\r\n        System.out.println(\"Ordenações por datas Medio caso:\");\r\n\r\n        // Selection Sort\r\n        System.out.println(\"Selection sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = selectionSortByDates(arrayToOrder.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_selectionSort_medioCaso.csv\", ordenArray);\r\n\r\n        // Insertion Sort\r\n        System.out.println(\"Insertion sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = inserrtionSortByDates(arrayToOrder.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_insertionSort_medioCaso.csv\", ordenArray);\r\n\r\n        // Merge Sort\r\n        System.out.println(\"Merge sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = mergeSortByDates(arrayToOrder.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_mergeSort_medioCaso.csv\", ordenArray);\r\n\r\n        // Quick Sort\r\n        System.out.println(\"Quick sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = quickSortByDates(arrayToOrder.clone(), 0, arrayToOrder.length - 1);\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_medioCaso.csv\", ordenArray);\r\n\r\n        // Quick Sort com Mediana de 3\r\n        System.out.println(\"Quick sort (Mediana de 3) | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = quickSortByDatesMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_mediana_de_3_medioCaso.csv\", ordenArray);\r\n\r\n        // Heap Sort\r\n        System.out.println(\"Heap sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = heapSortByDates(arrayToOrder.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_heapSort_medioCaso.csv\", ordenArray);\r\n\r\n        System.out.println(\"\\nPS: Para analise de melhor caso, usaremos o array ja ordenado por qualquer um dos métodos anteriores.\");\r\n        Path pathToCsvOrden = Paths.get(\"src\\\\main\\\\java\\\\database\\\\games_release_date_mergeSort_medioCaso.csv\");\r\n\r\n        CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);\r\n        assert arrayBetterCase != null;\r\n        System.out.println(\"Ordenações por datas Melhor caso:\");\r\n\r\n        // Selection Sort\r\n        System.out.println(\"Selection sort | Melhor Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = selectionSortByDates(arrayBetterCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_selection_melhorCaso.csv\", ordenArray);\r\n\r\n        // Insertion Sort\r\n        System.out.println(\"Insertion sort | Melhor Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = inserrtionSortByDates(arrayBetterCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_insertionSort_melhorCaso.csv\", ordenArray);\r\n\r\n        // Merge Sort\r\n        System.out.println(\"Merge sort | Melhor Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = mergeSortByDates(arrayBetterCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_mergeSort_melhorCaso.csv\", ordenArray);\r\n\r\n        // Quick Sort\r\n        System.out.println(\"Quick sort | Melhor Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);\r\n        try {\r\n            ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);\r\n        } catch (StackOverflowError e) {\r\n            System.err.println(\"StackOverflowError capturado: \" + e.getMessage());\r\n        }\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_melhorCaso.csv\", ordenArray);\r\n\r\n        // Quick Sort com Mediana de 3\r\n        System.out.println(\"Quick sort (Mediana de 3) | Melhor Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = quickSortByDatesMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_mediana_de_3_melhorCaso.csv\", ordenArray);\r\n\r\n        // Heap Sort\r\n        System.out.println(\"Heap sort | Melhor Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = heapSortByDates(arrayBetterCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_heapSort_melhorCaso.csv\", ordenArray);\r\n\r\n        System.out.println(\"\\nPS: Para analise de Pior caso, usaremos o array em ordem descrescente.\");\r\n        CSVRecord[] arrayWorstCase = getArray(pathToCsvOrden);\r\n        assert arrayWorstCase != null;\r\n        reverseArray(arrayWorstCase);\r\n        System.out.println(\"Ordenações por datas Pior caso:\");\r\n\r\n        // Selection Sort\r\n        System.out.println(\"Selection sort | Pior Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = selectionSortByDates(arrayWorstCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_selection_piorCaso.csv\", ordenArray);\r\n\r\n        // Insertion Sort\r\n        System.out.println(\"Insertion sort | Pior Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = inserrtionSortByDates(arrayWorstCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_insertionSort_piorCaso.csv\", ordenArray);\r\n\r\n        // Merge Sort\r\n        System.out.println(\"Merge sort | Pior Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = mergeSortByDates(arrayWorstCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_mergeSort_piorCaso.csv\", ordenArray);\r\n\r\n        // Quick Sort\r\n        System.out.println(\"Quick sort | Pior Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        try {\r\n            ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);\r\n        } catch (StackOverflowError e) {\r\n            System.err.println(\"StackOverflowError capturado: \" + e.getMessage());\r\n        }\r\n        ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_piorCaso.csv\", ordenArray);\r\n\r\n\r\n        // Quick Sort com Mediana de 3\r\n        System.out.println(\"Quick sort (Mediana de 3) | Pior Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = quickSortByDatesMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_mediana_de_3_piorCaso.csv\", ordenArray);\r\n\r\n        // Heap Sort\r\n        System.out.println(\"Heap sort | Pior Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = heapSortByDates(arrayWorstCase.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_heapSort_piorCaso.csv\", ordenArray);\r\n\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/OrdenationsByPrice.java b/src/main/java/org/example/OrdenationsByPrice.java
+--- a/src/main/java/org/example/OrdenationsByPrice.java	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/src/main/java/org/example/OrdenationsByPrice.java	(date 1726949806474)
+@@ -1,7 +1,5 @@
+ package org.example;
+ 
+-import com.opencsv.CSVReader;
+-import com.opencsv.CSVWriter;
+ import org.apache.commons.csv.CSVFormat;
+ import org.apache.commons.csv.CSVParser;
+ import org.apache.commons.csv.CSVPrinter;
+@@ -10,20 +8,14 @@
+ import java.io.*;
+ import java.nio.file.Path;
+ import java.nio.file.Paths;
+-import java.sql.SQLOutput;
+-import java.time.LocalDate;
+-import java.time.format.DateTimeFormatter;
+ import java.util.List;
+ 
+ public class OrdenationsByPrice {
+-    public static CSVRecord[] selectionSortByDates(CSVRecord[] array){
+-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
++    public static CSVRecord[] selectionSortByPrices(CSVRecord[] array){
+         for (int index = 0; index < array.length-1; index++) {
+             int minorIndex = index;
+             for (int secondIndex = index + 1; secondIndex < array.length; secondIndex++) {
+-                LocalDate date1 = LocalDate.parse(array[secondIndex].get(2), formatDate);
+-                LocalDate date2 = LocalDate.parse(array[minorIndex].get(2), formatDate);
+-                if (date1.isBefore(date2)) {
++                if (Double.parseDouble(array[minorIndex].get(6)) > Double.parseDouble(array[secondIndex].get(6))) {
+                     minorIndex = secondIndex;
+                 }
+             }
+@@ -33,21 +25,14 @@
+         }
+         return array;
+     }
+-    public static CSVRecord[] inserrtionSortByDates(CSVRecord[] array){
+-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
++    public static CSVRecord[] insertionSortByPrices(CSVRecord[] array){
+         for (int index = 1; index < array.length; index++) {
+             CSVRecord minor = array[index];
+             int secondIndex = index - 1;
+-            LocalDate minorValue = LocalDate.parse(minor.get(2), formatDate);
+ 
+-            while (secondIndex >= 0) {
+-                LocalDate date = LocalDate.parse(array[secondIndex].get(2), formatDate);
+-
+-                if (date.isAfter(minorValue)) {
+-                    array[secondIndex + 1] = array[secondIndex];
+-                } else {
+-                    break;
+-                }
++            double minorValue = Double.parseDouble(minor.get(6));
++            while (secondIndex >= 0 && Double.parseDouble(array[secondIndex].get(6)) > minorValue) {
++                array[secondIndex + 1] = array[secondIndex];
+                 secondIndex--;
+             }
+ 
+@@ -55,10 +40,11 @@
+         }
+         return array;
+     }
+-    public static CSVRecord[] mergeSortByDates(CSVRecord[] array) {
++    public static CSVRecord[] mergeSortByPrices(CSVRecord[] array) {
+         if (array.length <= 1) {
+             return array;
+         }
++
+         int mid = array.length / 2;
+         CSVRecord[] left = new CSVRecord[mid];
+         CSVRecord[] right = new CSVRecord[array.length - mid];
+@@ -66,8 +52,8 @@
+         System.arraycopy(array, 0, left, 0, mid);
+         System.arraycopy(array, mid, right, 0, array.length - mid);
+ 
+-        mergeSortByDates(left);
+-        mergeSortByDates(right);
++        mergeSortByPrices(left);
++        mergeSortByPrices(right);
+ 
+         merge(array, left, right);
+ 
+@@ -75,15 +61,13 @@
+     }
+ 
+     private static void merge(CSVRecord[] array, CSVRecord[] left, CSVRecord[] right) {
+-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+-
+         int i = 0, j = 0, k = 0;
+ 
+         while (i < left.length && j < right.length) {
+-            LocalDate leftDate = LocalDate.parse(left[i].get(2), formatDate);
+-            LocalDate rightDate = LocalDate.parse(right[j].get(2), formatDate);
++            double leftPrice = Double.parseDouble(left[i].get(6));
++            double rightPrice = Double.parseDouble(right[j].get(6));
+ 
+-            if (leftDate.isBefore(rightDate) || leftDate.isEqual(rightDate)) {
++            if (leftPrice <= rightPrice) {
+                 array[k++] = left[i++];
+             } else {
+                 array[k++] = right[j++];
+@@ -99,16 +83,15 @@
+         }
+     }
+ 
++
+     public static int partition(CSVRecord[] array, int first, int last) {
+-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+-
+-        LocalDate pivot = LocalDate.parse(array[last].get(2), formatDate);
++        double pivot = Double.parseDouble(array[last].get(6));
+         int iterator = first - 1;
+ 
+         for (int index = first; index < last; index++) {
+-            LocalDate currentDate = LocalDate.parse(array[index].get(2), formatDate);
++            double currentPrice = Double.parseDouble(array[index].get(6));
+ 
+-            if (currentDate.isBefore(pivot) || currentDate.isEqual(pivot)) {
++            if (currentPrice <= pivot) {
+                 iterator++;
+                 CSVRecord temp = array[iterator];
+                 array[iterator] = array[index];
+@@ -123,26 +106,24 @@
+         return iterator + 1;
+     }
+ 
+-    public static CSVRecord[] quickSortByDates(CSVRecord[] array, int first, int last) {
++    public static CSVRecord[] quickSortByPrices(CSVRecord[] array, int first, int last) {
+         if (first < last) {
+             int pivotPosition = partition(array, first, last);
+ 
+-            quickSortByDates(array, first, pivotPosition - 1);
+-            quickSortByDates(array, pivotPosition + 1, last);
++            quickSortByPrices(array, first, pivotPosition - 1);
++            quickSortByPrices(array, pivotPosition + 1, last);
+         }
+         return array;
+     }
+ 
+     public static int medianOf3(CSVRecord[] array, int first, int mid, int last) {
+-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
++        double firstPrice = Double.parseDouble(array[first].get(6));
++        double midPrice = Double.parseDouble(array[mid].get(6));
++        double lastPrice = Double.parseDouble(array[last].get(6));
+ 
+-        LocalDate firstDate = LocalDate.parse(array[first].get(2), formatDate);
+-        LocalDate midDate = LocalDate.parse(array[mid].get(2), formatDate);
+-        LocalDate lastDate = LocalDate.parse(array[last].get(2), formatDate);
+-
+-        if ((firstDate.isBefore(midDate) && midDate.isBefore(lastDate)) || (lastDate.isBefore(midDate) && midDate.isBefore(firstDate))) {
++        if ((firstPrice < midPrice && midPrice < lastPrice) || (lastPrice < midPrice && midPrice < firstPrice)) {
+             return mid;
+-        } else if ((midDate.isBefore(firstDate) && firstDate.isBefore(lastDate)) || (lastDate.isBefore(firstDate) && firstDate.isBefore(midDate))) {
++        } else if ((midPrice < firstPrice && firstPrice < lastPrice) || (lastPrice < firstPrice && firstPrice < midPrice)) {
+             return first;
+         } else {
+             return last;
+@@ -157,15 +138,14 @@
+         array[median] = array[last];
+         array[last] = temp;
+ 
+-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+-        LocalDate pivot = LocalDate.parse(array[last].get(2), formatDate);
++        double pivot = Double.parseDouble(array[last].get(6));
+ 
+         int iterator = first - 1;
+ 
+         for (int index = first; index < last; index++) {
+-            LocalDate currentDate = LocalDate.parse(array[index].get(2), formatDate);
++            double currentPrice = Double.parseDouble(array[index].get(6));
+ 
+-            if (currentDate.isBefore(pivot) || currentDate.isEqual(pivot)) {
++            if (currentPrice <= pivot) {
+                 iterator++;
+                 CSVRecord swapTemp = array[iterator];
+                 array[iterator] = array[index];
+@@ -180,17 +160,19 @@
+         return iterator + 1;
+     }
+ 
+-    public static CSVRecord[] quickSortByDatesMedianOf3(CSVRecord[] array, int first, int last) {
++    public static CSVRecord[] quickSortByPricesMedianOf3(CSVRecord[] array, int first, int last) {
+         if (first < last) {
+             int pivotPosition = partitionMedian3(array, first, last);
+-            quickSortByDatesMedianOf3(array, first, pivotPosition - 1);
+-            quickSortByDatesMedianOf3(array, pivotPosition + 1, last);
++
++            quickSortByPricesMedianOf3(array, first, pivotPosition - 1);
++            quickSortByPricesMedianOf3(array, pivotPosition + 1, last);
+         }
+ 
+         return array;
+     }
+ 
+-    public static CSVRecord[] heapSortByDates(CSVRecord[] array) {
++
++    public static CSVRecord[] heapSortByPrices(CSVRecord[] array) {
+         int n = array.length;
+ 
+         for (int i = n / 2 - 1; i >= 0; i--) {
+@@ -212,13 +194,13 @@
+         int left = 2 * i + 1;
+         int right = 2 * i + 2;
+ 
+-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
++        double largestPrice = Double.parseDouble(array[largest].get(6));
+ 
+-        if (left < n && LocalDate.parse(array[left].get(2), formatDate).isAfter(LocalDate.parse(array[largest].get(2), formatDate))) {
++        if (left < n && Double.parseDouble(array[left].get(6)) > largestPrice) {
+             largest = left;
+         }
+ 
+-        if (right < n && LocalDate.parse(array[right].get(2), formatDate).isAfter(LocalDate.parse(array[largest].get(2), formatDate))) {
++        if (right < n && Double.parseDouble(array[right].get(6)) > Double.parseDouble(array[largest].get(6))) {
+             largest = right;
+         }
+ 
+@@ -230,6 +212,7 @@
+             heapify(array, n, largest);
+         }
+     }
++
+     public static CSVRecord[] getArray(Path filePath) throws IOException {
+         File file = filePath.toFile();
+ 
+@@ -282,134 +265,134 @@
+             end--;
+         }
+     }
+-    public static void main(String[] args) throws IOException {
++    public static void mainOrdenationsByPrice() throws IOException {
+ 
+-        Path pathToGamesFormated = Paths.get("src\\main\\java\\database\\games_formated_release_data.csv");
+-        CSVRecord[] arrayToOrder = getArray(pathToGamesFormated);
++        Path pathToGames = Paths.get("src\\main\\java\\database\\games.csv");
++        CSVRecord[] arrayToOrder = getArray(pathToGames);
+         assert arrayToOrder != null;
+         long startTime, endTime, duration;
+         CSVRecord[] ordenArray;
+-        System.out.println("Ordenações por datas Medio caso:");
++        System.out.println("Ordenações por preços Medio caso:");
+ 
+         // Selection Sort
+         System.out.println("Selection sort | Médio Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = selectionSortByDates(arrayToOrder.clone());
++        ordenArray = selectionSortByPrices(arrayToOrder.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_selectionSort_medioCaso.csv", ordenArray);
++        writeToCvs("games_price_selectionSort_medioCaso.csv", ordenArray);
+ 
+         // Insertion Sort
+         System.out.println("Insertion sort | Médio Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = inserrtionSortByDates(arrayToOrder.clone());
++        ordenArray = insertionSortByPrices(arrayToOrder.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_insertionSort_medioCaso.csv", ordenArray);
++        writeToCvs("games_price_insertionSort_medioCaso.csv", ordenArray);
+ 
+         // Merge Sort
+         System.out.println("Merge sort | Médio Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = mergeSortByDates(arrayToOrder.clone());
++        ordenArray = mergeSortByPrices(arrayToOrder.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_mergeSort_medioCaso.csv", ordenArray);
++        writeToCvs("games_price_mergeSort_medioCaso.csv", ordenArray);
+ 
+         // Quick Sort
+         System.out.println("Quick sort | Médio Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = quickSortByDates(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
++        ordenArray = quickSortByPrices(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_quickSort_medioCaso.csv", ordenArray);
++        writeToCvs("games_price_quickSort_medioCaso.csv", ordenArray);
+ 
+         // Quick Sort com Mediana de 3
+         System.out.println("Quick sort (Mediana de 3) | Médio Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = quickSortByDatesMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
++        ordenArray = quickSortByPricesMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
++        writeToCvs("games_price_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
+ 
+         // Heap Sort
+         System.out.println("Heap sort | Médio Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = heapSortByDates(arrayToOrder.clone());
++        ordenArray = heapSortByPrices(arrayToOrder.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_heapSort_medioCaso.csv", ordenArray);
++        writeToCvs("games_price_heapSort_medioCaso.csv", ordenArray);
+ 
+         System.out.println("\nPS: Para analise de melhor caso, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
+-        Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_release_date_mergeSort_medioCaso.csv");
++        Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_price_quickSort_medioCaso.csv");
+ 
+         CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
+         assert arrayBetterCase != null;
+-        System.out.println("Ordenações por datas Melhor caso:");
++        System.out.println("Ordenações por preços Melhor caso:");
+ 
+         // Selection Sort
+         System.out.println("Selection sort | Melhor Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = selectionSortByDates(arrayBetterCase.clone());
++        ordenArray = selectionSortByPrices(arrayBetterCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_selection_melhorCaso.csv", ordenArray);
++        writeToCvs("games_price_selection_melhorCaso.csv", ordenArray);
+ 
+         // Insertion Sort
+         System.out.println("Insertion sort | Melhor Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = inserrtionSortByDates(arrayBetterCase.clone());
++        ordenArray = insertionSortByPrices(arrayBetterCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_insertionSort_melhorCaso.csv", ordenArray);
++        writeToCvs("games_price_insertionSort_melhorCaso.csv", ordenArray);
+ 
+         // Merge Sort
+         System.out.println("Merge sort | Melhor Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = mergeSortByDates(arrayBetterCase.clone());
++        ordenArray = mergeSortByPrices(arrayBetterCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_mergeSort_melhorCaso.csv", ordenArray);
++        writeToCvs("games_price_mergeSort_melhorCaso.csv", ordenArray);
+ 
+         // Quick Sort
+         System.out.println("Quick sort | Melhor Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        //ordenArray = quickSortByPrices(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
+         try {
+-            ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++            ordenArray = quickSortByPrices(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
+         } catch (StackOverflowError e) {
+             System.err.println("StackOverflowError capturado: " + e.getMessage());
+         }
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_quickSort_melhorCaso.csv", ordenArray);
++        writeToCvs("games_price_quickSort_melhorCaso.csv", ordenArray);
+ 
+         // Quick Sort com Mediana de 3
+         System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = quickSortByDatesMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        ordenArray = quickSortByPricesMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
++        writeToCvs("games_price_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
+ 
+         // Heap Sort
+         System.out.println("Heap sort | Melhor Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = heapSortByDates(arrayBetterCase.clone());
++        ordenArray = heapSortByPrices(arrayBetterCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_heapSort_melhorCaso.csv", ordenArray);
++        writeToCvs("games_price_heapSort_melhorCaso.csv", ordenArray);
+ 
+         System.out.println("\nPS: Para analise de Pior caso, usaremos o array em ordem descrescente.");
+         CSVRecord[] arrayWorstCase = getArray(pathToCsvOrden);
+@@ -420,62 +403,62 @@
+         // Selection Sort
+         System.out.println("Selection sort | Pior Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = selectionSortByDates(arrayWorstCase.clone());
++        ordenArray = selectionSortByPrices(arrayWorstCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_selection_piorCaso.csv", ordenArray);
++        writeToCvs("games_price_selection_piorCaso.csv", ordenArray);
+ 
+         // Insertion Sort
+         System.out.println("Insertion sort | Pior Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = inserrtionSortByDates(arrayWorstCase.clone());
++        ordenArray = insertionSortByPrices(arrayWorstCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_insertionSort_piorCaso.csv", ordenArray);
++        writeToCvs("games_price_insertionSort_piorCaso.csv", ordenArray);
+ 
+         // Merge Sort
+         System.out.println("Merge sort | Pior Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = mergeSortByDates(arrayWorstCase.clone());
++        ordenArray = mergeSortByPrices(arrayWorstCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_mergeSort_piorCaso.csv", ordenArray);
++        writeToCvs("games_price_mergeSort_piorCaso.csv", ordenArray);
+ 
+         // Quick Sort
+         System.out.println("Quick sort | Pior Caso:");
+         startTime = System.currentTimeMillis();
+         try {
+-            ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++            ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+         } catch (StackOverflowError e) {
+             System.err.println("StackOverflowError capturado: " + e.getMessage());
+         }
+-        ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        //ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_quickSort_piorCaso.csv", ordenArray);
++        writeToCvs("games_price_quickSort_piorCaso.csv", ordenArray);
+ 
+ 
+         // Quick Sort com Mediana de 3
+         System.out.println("Quick sort (Mediana de 3) | Pior Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = quickSortByDatesMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        ordenArray = quickSortByPricesMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
++        writeToCvs("games_price_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
+ 
+         // Heap Sort
+         System.out.println("Heap sort | Pior Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = heapSortByDates(arrayWorstCase.clone());
++        ordenArray = heapSortByPrices(arrayWorstCase.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_heapSort_piorCaso.csv", ordenArray);
++        writeToCvs("games_price_heapSort_piorCaso.csv", ordenArray);
+ 
+     }
+ }
+Index: src/main/java/org/example/Transformations.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.example;\r\nimport com.opencsv.CSVReader;\r\nimport com.opencsv.CSVWriter;\r\nimport com.opencsv.exceptions.CsvException;\r\n\r\nimport java.io.File;\r\nimport java.io.FileReader;\r\nimport java.io.FileWriter;\r\nimport java.io.IOException;\r\nimport java.nio.file.Path;\r\nimport java.nio.file.Paths;\r\nimport java.time.LocalDate;\r\nimport java.time.format.DateTimeFormatter;\r\nimport java.time.format.DateTimeParseException;\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\nimport java.util.Locale;\r\n\r\npublic class Transformations {\r\n\r\n    public static String convertDate(String dateStr) {\r\n        DateTimeFormatter inputFormat, outputFormat;\r\n        LocalDate date;\r\n        try{\r\n            inputFormat = DateTimeFormatter.ofPattern(\"MMM d, yyyy\", Locale.ENGLISH);\r\n            outputFormat = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n            date = LocalDate.parse(dateStr, inputFormat);\r\n            dateStr = date.format(outputFormat);\r\n            return dateStr;\r\n        } catch (DateTimeParseException e) {\r\n            try {\r\n                inputFormat = DateTimeFormatter.ofPattern(\"MMM yyyy dd\", Locale.ENGLISH);\r\n                outputFormat = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n                date = LocalDate.parse(dateStr + \" 01\", inputFormat);\r\n                dateStr = date.format(outputFormat);\r\n                return dateStr;\r\n            } catch (Exception exception) {\r\n                System.out.println(\"Error: \"+ exception.getMessage());\r\n                throw exception;\r\n            }\r\n        }\r\n    }\r\n    public static void toReleaseData(Path filePath) throws IOException, CsvException {\r\n        File games = filePath.toFile();\r\n        File gamesFormated = new File(games.getParent(), \"games_formated_release_data.csv\");\r\n\r\n        try (CSVReader csvReader = new CSVReader(new FileReader(games));\r\n             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesFormated))) {\r\n\r\n            String[] header = csvReader.readNext();\r\n            if (header != null) {\r\n                csvWriter.writeNext(header);\r\n                String[] row;\r\n                while ((row = csvReader.readNext()) != null) {\r\n                    if (row.length > 2) {\r\n                        String originalDate = row[2];\r\n                        if (!originalDate.equals(\"Release date\")) {\r\n                            row[2] = convertDate(originalDate);\r\n                            System.out.println(row[2]);\r\n                        }\r\n                    }\r\n                    csvWriter.writeNext(row);\r\n                }\r\n            }\r\n        } catch (Exception exception) {\r\n            System.out.println(\"Error: \" + exception.getMessage());\r\n            throw exception;\r\n        }\r\n    }\r\n    public static void filterLinux(Path filePath) throws IOException, CsvException {\r\n        File file = filePath.toFile();\r\n        File gamesLinux = new File(file.getParent(), \"games_linux.csv\");\r\n\r\n        try (CSVReader csvReader = new CSVReader(new FileReader(file));\r\n             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesLinux))) {\r\n\r\n            String[] header = csvReader.readNext();\r\n            if (header != null) {\r\n                csvWriter.writeNext(header);\r\n\r\n                String[] row;\r\n                while ((row = csvReader.readNext()) != null) {\r\n                    if (row.length > 18 && \"True\".equals(row[18])) {\r\n                        csvWriter.writeNext(row);\r\n                    }\r\n                }\r\n            }\r\n        } catch (Exception exception) {\r\n            System.out.println(\"Error: \" + exception.getMessage());\r\n            throw exception;\r\n        }\r\n    }\r\n\r\n    public static void filterPortuguese(Path filePath) throws IOException, CsvException {\r\n        File file = filePath.toFile();\r\n        File gamesPortuguese = new File(file.getParent(), \"portuguese_supported_games.csv\");\r\n\r\n        try (CSVReader csvReader = new CSVReader(new FileReader(file));\r\n             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesPortuguese))) {\r\n\r\n            String[] header = csvReader.readNext();\r\n            if (header != null) {\r\n                csvWriter.writeNext(header);\r\n\r\n                String[] row;\r\n                while ((row = csvReader.readNext()) != null) {\r\n                    if (row.length > 10) {\r\n                        String languagesString = row[10].trim();\r\n                        languagesString = languagesString.replaceAll(\"[\\\\[\\\\]']\", \"\");\r\n\r\n                        String[] languages = languagesString.split(\",\\\\s*\");\r\n\r\n                        for (String lang : languages) {\r\n                            if (\"Portuguese - Brazil\".equalsIgnoreCase(lang.trim())) {\r\n                                csvWriter.writeNext(row);\r\n                                break;\r\n                            }\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n        }catch (Exception exception) {\r\n            System.out.println(\"Error: \" + exception.getMessage());\r\n            throw exception;\r\n        }\r\n    }\r\n    public static void main(String[] args) throws IOException, CsvException {\r\n        //Path pathtoGames = Paths.get(\"src\\\\main\\\\java\\\\database\\\\games.csv\");\r\n        //toReleaseData(pathtoGames);\r\n        Path pathtoGamesFormated = Paths.get(\"src\\\\main\\\\java\\\\database\\\\games_formated_release_data.csv\");\r\n        //filterLinux(pathtoGamesFormated);\r\n        filterPortuguese(pathtoGamesFormated);\r\n    }\r\n}\r\n\r\n/*\r\n    public static void toReleaseData(Path filePath) throws IOException, CsvException {\r\n        File games = filePath.toFile();\r\n        File gamesFormated = new File(games.getParent(), \"games_formated_release_data.csv\");\r\n\r\n        try (CSVReader csvReader = new CSVReader(new FileReader(games));\r\n             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesFormated))) {\r\n\r\n            String[] header = csvReader.readNext();\r\n            if (header != null) {\r\n                csvWriter.writeNext(header);\r\n                int cont = 0;\r\n                String[] row;\r\n                while ((row = csvReader.readNext()) != null) {\r\n                    if (row.length > 2) {\r\n                        String originalDate = row[2];\r\n                        if (!originalDate.equals(\"Release date\")) {\r\n                            row[2] = convertDate(originalDate);\r\n                            System.out.println(row[2]);\r\n                        }\r\n                    }\r\n                    csvWriter.writeNext(row);\r\n                    System.out.println(\"linha escrita: \" + cont++);\r\n                }\r\n                        }\r\n                        } catch (Exception exception) {\r\n        System.out.println(\"Error: \" + exception.getMessage());\r\n        throw exception;\r\n        }\r\n                }\r\n* */
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/Transformations.java b/src/main/java/org/example/Transformations.java
+--- a/src/main/java/org/example/Transformations.java	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/src/main/java/org/example/Transformations.java	(date 1726949806502)
+@@ -1,18 +1,15 @@
+ package org.example;
+-import com.opencsv.CSVReader;
+-import com.opencsv.CSVWriter;
+-import com.opencsv.exceptions.CsvException;
++import org.apache.commons.csv.CSVFormat;
++import org.apache.commons.csv.CSVParser;
++import org.apache.commons.csv.CSVPrinter;
++import org.apache.commons.csv.CSVRecord;
+ 
+-import java.io.File;
+-import java.io.FileReader;
+-import java.io.FileWriter;
+-import java.io.IOException;
++import java.io.*;
+ import java.nio.file.Path;
+ import java.nio.file.Paths;
+ import java.time.LocalDate;
+ import java.time.format.DateTimeFormatter;
+ import java.time.format.DateTimeParseException;
+-import java.util.ArrayList;
+ import java.util.List;
+ import java.util.Locale;
+ 
+@@ -21,7 +18,7 @@
+     public static String convertDate(String dateStr) {
+         DateTimeFormatter inputFormat, outputFormat;
+         LocalDate date;
+-        try{
++        try {
+             inputFormat = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH);
+             outputFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+             date = LocalDate.parse(dateStr, inputFormat);
+@@ -35,132 +32,93 @@
+                 dateStr = date.format(outputFormat);
+                 return dateStr;
+             } catch (Exception exception) {
+-                System.out.println("Error: "+ exception.getMessage());
+-                throw exception;
++                System.out.println("Error: " + exception.getMessage());
++                throw e;
+             }
+         }
+     }
+-    public static void toReleaseData(Path filePath) throws IOException, CsvException {
++
++    public static void toReleaseDate(Path filePath) throws IOException {
+         File games = filePath.toFile();
+         File gamesFormated = new File(games.getParent(), "games_formated_release_data.csv");
+ 
+-        try (CSVReader csvReader = new CSVReader(new FileReader(games));
+-             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesFormated))) {
++        try (
++                Reader reader = new FileReader(games);
++                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
++                Writer writer = new FileWriter(gamesFormated);
++                CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(csvParser.getHeaderMap().keySet().toArray(new String[0])))
+ 
+-            String[] header = csvReader.readNext();
+-            if (header != null) {
+-                csvWriter.writeNext(header);
+-                String[] row;
+-                while ((row = csvReader.readNext()) != null) {
+-                    if (row.length > 2) {
+-                        String originalDate = row[2];
+-                        if (!originalDate.equals("Release date")) {
+-                            row[2] = convertDate(originalDate);
+-                            System.out.println(row[2]);
+-                        }
+-                    }
+-                    csvWriter.writeNext(row);
+-                }
++        ) {
++            for (CSVRecord record : csvParser) {
++                List<String> row = record.toList();
++                row.set(2, convertDate(record.get(2)));
++
++                csvPrinter.printRecord(row);
+             }
+-        } catch (Exception exception) {
+-            System.out.println("Error: " + exception.getMessage());
+-            throw exception;
++        } catch (IOException e) {
++            System.out.println("Erro: "+e.getMessage());
+         }
++
+     }
+-    public static void filterLinux(Path filePath) throws IOException, CsvException {
+-        File file = filePath.toFile();
+-        File gamesLinux = new File(file.getParent(), "games_linux.csv");
+ 
+-        try (CSVReader csvReader = new CSVReader(new FileReader(file));
+-             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesLinux))) {
++    public static void getLinuxGames(Path filePath) throws IOException {
++        File gamesFormated = filePath.toFile();
++        File linuxGames = new File(gamesFormated.getParent(), "games_linux.csv");
+ 
+-            String[] header = csvReader.readNext();
+-            if (header != null) {
+-                csvWriter.writeNext(header);
++        try (
++                Reader reader = new FileReader(gamesFormated);
++                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
++                Writer writer = new FileWriter(linuxGames);
++                CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(csvParser.getHeaderMap().keySet().toArray(new String[0])))
+ 
+-                String[] row;
+-                while ((row = csvReader.readNext()) != null) {
+-                    if (row.length > 18 && "True".equals(row[18])) {
+-                        csvWriter.writeNext(row);
+-                    }
++        ) {
++            for (CSVRecord record : csvParser) {
++                if ("True".equals(record.get("Linux"))){
++                    csvPrinter.printRecord(record);
+                 }
+             }
+-        } catch (Exception exception) {
+-            System.out.println("Error: " + exception.getMessage());
+-            throw exception;
++        } catch (IOException e) {
++            System.out.println("Erro: "+e.getMessage());
++
+         }
++
+     }
+ 
+-    public static void filterPortuguese(Path filePath) throws IOException, CsvException {
+-        File file = filePath.toFile();
+-        File gamesPortuguese = new File(file.getParent(), "portuguese_supported_games.csv");
++    public static void getPortugueseGames(Path filePath) throws IOException {
++        File gamesFormated = filePath.toFile();
++        File portuguesesGames = new File(gamesFormated.getParent(), "portuguese_supported_games.csv");
+ 
+-        try (CSVReader csvReader = new CSVReader(new FileReader(file));
+-             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesPortuguese))) {
++        try (
++                Reader reader = new FileReader(gamesFormated);
++                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
++                Writer writer = new FileWriter(portuguesesGames);
++                CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(csvParser.getHeaderMap().keySet().toArray(new String[0])))
+ 
+-            String[] header = csvReader.readNext();
+-            if (header != null) {
+-                csvWriter.writeNext(header);
+-
+-                String[] row;
+-                while ((row = csvReader.readNext()) != null) {
+-                    if (row.length > 10) {
+-                        String languagesString = row[10].trim();
+-                        languagesString = languagesString.replaceAll("[\\[\\]']", "");
+-
+-                        String[] languages = languagesString.split(",\\s*");
+-
+-                        for (String lang : languages) {
+-                            if ("Portuguese - Brazil".equalsIgnoreCase(lang.trim())) {
+-                                csvWriter.writeNext(row);
+-                                break;
+-                            }
+-                        }
++        ) {
++            for (CSVRecord record : csvParser) {
++                String content = record.get(10).trim().replaceAll("[\\[\\]']", "");
++                String[] languages = content.split(",\\s*");
++                for (String lang : languages) {
++                    if ("Portuguese - Brazil".equalsIgnoreCase(lang.trim())) {
++                        csvPrinter.printRecord(record);
++                        break;
+                     }
+                 }
+             }
+-        }catch (Exception exception) {
+-            System.out.println("Error: " + exception.getMessage());
+-            throw exception;
++        } catch (IOException e) {
++            System.out.println("Erro: "+e.getMessage());
+         }
++
+     }
+-    public static void main(String[] args) throws IOException, CsvException {
+-        //Path pathtoGames = Paths.get("src\\main\\java\\database\\games.csv");
+-        //toReleaseData(pathtoGames);
+-        Path pathtoGamesFormated = Paths.get("src\\main\\java\\database\\games_formated_release_data.csv");
+-        //filterLinux(pathtoGamesFormated);
+-        filterPortuguese(pathtoGamesFormated);
++
++    public static void mainTransformations() throws IOException {
++        Path pathToGames = Paths.get("src\\main\\java\\database\\games.csv");
++        Path pathToGamesFormated = Paths.get("src\\main\\java\\database\\games_formated_release_data.csv");
++        toReleaseDate(pathToGames);
++        getLinuxGames(pathToGamesFormated);
++        getPortugueseGames(pathToGamesFormated);
+     }
+-}
+ 
+-/*
+-    public static void toReleaseData(Path filePath) throws IOException, CsvException {
+-        File games = filePath.toFile();
+-        File gamesFormated = new File(games.getParent(), "games_formated_release_data.csv");
+-
+-        try (CSVReader csvReader = new CSVReader(new FileReader(games));
+-             CSVWriter csvWriter = new CSVWriter(new FileWriter(gamesFormated))) {
+ 
+-            String[] header = csvReader.readNext();
+-            if (header != null) {
+-                csvWriter.writeNext(header);
+-                int cont = 0;
+-                String[] row;
+-                while ((row = csvReader.readNext()) != null) {
+-                    if (row.length > 2) {
+-                        String originalDate = row[2];
+-                        if (!originalDate.equals("Release date")) {
+-                            row[2] = convertDate(originalDate);
+-                            System.out.println(row[2]);
+-                        }
+-                    }
+-                    csvWriter.writeNext(row);
+-                    System.out.println("linha escrita: " + cont++);
+-                }
+-                        }
+-                        } catch (Exception exception) {
+-        System.out.println("Error: " + exception.getMessage());
+-        throw exception;
+-        }
+-                }
+-* */
+\ No newline at end of file
++}
++
+Index: src/main/java/org/example/OrdenationsByAchievements.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.example;\r\n\r\npublic class OrdenationsByAchievements {\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/OrdenationsByAchievements.java b/src/main/java/org/example/OrdenationsByAchievements.java
+--- a/src/main/java/org/example/OrdenationsByAchievements.java	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/src/main/java/org/example/OrdenationsByAchievements.java	(date 1726949806530)
+@@ -1,4 +1,519 @@
+ package org.example;
+ 
++import org.apache.commons.csv.CSVFormat;
++import org.apache.commons.csv.CSVParser;
++import org.apache.commons.csv.CSVPrinter;
++import org.apache.commons.csv.CSVRecord;
++
++import java.io.*;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.util.List;
++
+ public class OrdenationsByAchievements {
++    public static CSVRecord[] selectionSortByAchievements(CSVRecord[] array){
++        for (int index = 0; index < array.length-1; index++) {
++            int minorIndex = index;
++            for (int secondIndex = index + 1; secondIndex < array.length; secondIndex++) {
++                if (Integer.parseInt(array[minorIndex].get(25)) < Integer.parseInt(array[secondIndex].get(25))) {
++                    minorIndex = secondIndex;
++                }
++            }
++            CSVRecord temp = array[minorIndex];
++            array[minorIndex] = array[index];
++            array[index] = temp;
++        }
++        return array;
++    }
++    public static CSVRecord[] insertionSortByAchievements(CSVRecord[] array){
++        for (int index = 1; index < array.length; index++) {
++            CSVRecord minor = array[index];
++            int secondIndex = index - 1;
++
++            double minorValue = Integer.parseInt(minor.get(25));
++            while (secondIndex >= 0 && Integer.parseInt(array[secondIndex].get(25)) < minorValue) {
++                array[secondIndex + 1] = array[secondIndex];
++                secondIndex--;
++            }
++
++            array[secondIndex + 1] = minor;
++        }
++        return array;
++    }
++    public static CSVRecord[] mergeSortByAchievements(CSVRecord[] array) {
++        if (array.length <= 1) {
++            return array;
++        }
++
++        int mid = array.length / 2;
++        CSVRecord[] left = new CSVRecord[mid];
++        CSVRecord[] right = new CSVRecord[array.length - mid];
++
++        System.arraycopy(array, 0, left, 0, mid);
++        System.arraycopy(array, mid, right, 0, array.length - mid);
++
++        mergeSortByAchievements(left);
++        mergeSortByAchievements(right);
++
++        merge(array, left, right);
++
++        return array;
++    }
++
++    private static void merge(CSVRecord[] array, CSVRecord[] left, CSVRecord[] right) {
++        int i = 0, j = 0, k = 0;
++
++        while (i < left.length && j < right.length) {
++            int leftPrice = Integer.parseInt(left[i].get(25));
++            int rightPrice = Integer.parseInt(right[j].get(25));
++
++            if (leftPrice >= rightPrice) {
++                array[k++] = left[i++];
++            } else {
++                array[k++] = right[j++];
++            }
++        }
++
++        while (i < left.length) {
++            array[k++] = left[i++];
++        }
++
++        while (j < right.length) {
++            array[k++] = right[j++];
++        }
++    }
++
++
++    public static int partition(CSVRecord[] array, int first, int last) {
++        int pivot = Integer.parseInt(array[last].get(25));
++        int iterator = first - 1;
++
++        for (int index = first; index < last; index++) {
++            int currentPrice = Integer.parseInt(array[index].get(25));
++
++            if (currentPrice >= pivot) {
++                iterator++;
++                CSVRecord temp = array[iterator];
++                array[iterator] = array[index];
++                array[index] = temp;
++            }
++        }
++
++        CSVRecord temp = array[iterator + 1];
++        array[iterator + 1] = array[last];
++        array[last] = temp;
++
++        return iterator + 1;
++    }
++
++    public static CSVRecord[] quickSortByAchievements(CSVRecord[] array, int first, int last) {
++        if (first < last) {
++            int pivotPosition = partition(array, first, last);
++
++            quickSortByAchievements(array, first, pivotPosition - 1);
++            quickSortByAchievements(array, pivotPosition + 1, last);
++        }
++        return array;
++    }
++
++
++    public static int medianOf3(CSVRecord[] array, int first, int mid, int last) {
++        double firstPrice = Double.parseDouble(array[first].get(25));
++        double midPrice = Double.parseDouble(array[mid].get(25));
++        double lastPrice = Double.parseDouble(array[last].get(25));
++
++        if ((firstPrice < midPrice && midPrice < lastPrice) || (lastPrice < midPrice && midPrice < firstPrice)) {
++            return mid;
++        } else if ((midPrice < firstPrice && firstPrice < lastPrice) || (lastPrice < firstPrice && firstPrice < midPrice)) {
++            return first;
++        } else {
++            return last;
++        }
++    }
++
++    public static int partitionMedian3(CSVRecord[] array, int first, int last) {
++        int mid = (first + last) / 2;
++        int median = medianOf3(array, first, mid, last);
++
++        CSVRecord temp = array[median];
++        array[median] = array[last];
++        array[last] = temp;
++
++        double pivot = Double.parseDouble(array[last].get(25));
++
++        int iterator = first - 1;
++
++        for (int index = first; index < last; index++) {
++            double currentPrice = Double.parseDouble(array[index].get(6));
++
++            // Alterando a condição para ordenação decrescente
++            if (currentPrice >= pivot) {
++                iterator++;
++                CSVRecord swapTemp = array[iterator];
++                array[iterator] = array[index];
++                array[index] = swapTemp;
++            }
++        }
++
++        CSVRecord swapTemp = array[iterator + 1];
++        array[iterator + 1] = array[last];
++        array[last] = swapTemp;
++
++        return iterator + 1;
++    }
++
++    public static CSVRecord[] quickSortByAchievementsMedianOf3(CSVRecord[] array, int first, int last) {
++        if (first < last) {
++            int pivotPosition = partitionMedian3(array, first, last);
++
++            quickSortByAchievements(array, first, pivotPosition - 1);
++            quickSortByAchievements(array, pivotPosition + 1, last);
++        }
++
++        return array;
++    }
++
++    public static CSVRecord[] heapSortByAchievements(CSVRecord[] array) {
++        int n = array.length;
++
++        for (int i = n / 2 - 1; i >= 0; i--) {
++            heapify(array, n, i);
++        }
++
++        for (int i = n - 1; i > 0; i--) {
++            CSVRecord temp = array[i];
++            array[i] = array[0];
++            array[0] = temp;
++
++            heapify(array, i, 0);
++        }
++        return array;
++    }
++
++    private static void heapify(CSVRecord[] array, int n, int i) {
++        int largest = i;
++        int left = 2 * i + 1;
++        int right = 2 * i + 2;
++
++        if (left < n && Integer.parseInt(array[left].get(25)) > Integer.parseInt(array[largest].get(6))) {
++            largest = left;
++        }
++
++        if (right < n && Integer.parseInt(array[right].get(25)) > Integer.parseInt(array[largest].get(6))) {
++            largest = right;
++        }
++
++        if (largest != i) {
++            CSVRecord swap = array[i];
++            array[i] = array[largest];
++            array[largest] = swap;
++
++            heapify(array, n, largest);
++        }
++    }
++    public static CSVRecord[] countSortByAchievements(CSVRecord[] array) {
++        int len = array.length;
++        int iterator;
++        int maxValue = Integer.parseInt(array[0].get(25));
++
++        for (iterator = 1; iterator < len; iterator++) {
++            if (Integer.parseInt(array[iterator].get(25)) > maxValue) {
++                maxValue = Integer.parseInt(array[iterator].get(25));
++            }
++        }
++
++        int[] countArray = new int[maxValue + 1];
++        for (iterator = 0; iterator < len; iterator++) {
++            countArray[Integer.parseInt(array[iterator].get(25))]++;
++        }
++
++        for (iterator = maxValue - 1; iterator >= 0; iterator--) {
++            countArray[iterator] += countArray[iterator + 1];
++        }
++
++        CSVRecord[] outputArray = new CSVRecord[len];
++        for (iterator = len - 1; iterator >= 0; iterator--) {
++            outputArray[countArray[Integer.parseInt(array[iterator].get(25))] - 1] = array[iterator];
++            countArray[Integer.parseInt(array[iterator].get(25))]--;
++        }
++
++        return outputArray;
++    }
++
++
++    public static CSVRecord[] getArray(Path filePath) throws IOException {
++        File file = filePath.toFile();
++
++        try (
++                Reader reader = new FileReader(file);
++                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
++        ) {
++            List<CSVRecord> records = csvParser.getRecords();
++
++            CSVRecord[] array = new CSVRecord[records.size()];
++            for (int i = 0; i < records.size(); i++) {
++                array[i] = records.get(i);
++            }
++            return array;
++        } catch (IOException e) {
++            System.out.println(e.getMessage());
++            return null;
++        }
++
++    }
++    public static void writeToCvs (String fileName,CSVRecord[] array) throws IOException {
++        Path databasePath = Paths.get("src\\main\\java\\database");
++        File outputFile = new File(databasePath.toString(), fileName);
++        File fileToGetHeader = new File(databasePath.toString(),"portuguese_supported_games.csv");
++
++        try (
++                Writer writer = new FileWriter(outputFile);
++                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
++                Reader reader = new FileReader(fileToGetHeader);
++                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
++        ) {
++            printer.printRecord(csvParser.getHeaderMap().keySet());
++            for (int i = 0; i < array.length; i++) {
++                printer.printRecord(array[i]);
++            }
++        }catch (IOException e) {
++            System.out.println(e.getMessage());
++        }
++    }
++    public static void reverseArray(CSVRecord[] arrayWorstCase){
++        int start = 0;
++        int end = arrayWorstCase.length - 1;
++
++        while (start < end) {
++            CSVRecord swap = arrayWorstCase[start];
++            arrayWorstCase[start] = arrayWorstCase[end];
++            arrayWorstCase[end] = swap;
++
++            start++;
++            end--;
++        }
++    }
++    public static void mainOrdenationsByAchievements() throws IOException {
++
++        Path pathToGames = Paths.get("src\\main\\java\\database\\games.csv");
++        CSVRecord[] arrayToOrder = getArray(pathToGames);
++        assert arrayToOrder != null;
++        long startTime, endTime, duration;
++        CSVRecord[] ordenArray;
++        System.out.println("Ordenações por achievements Medio caso:");
++
++        // Selection Sort
++        System.out.println("Selection sort | Médio Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = selectionSortByAchievements(arrayToOrder.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_selectionSort_medioCaso.csv", ordenArray);
++
++        // Insertion Sort
++        System.out.println("Insertion sort | Médio Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = insertionSortByAchievements(arrayToOrder.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_insertionSort_medioCaso.csv", ordenArray);
++
++        // Merge Sort
++        System.out.println("Merge sort | Médio Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = mergeSortByAchievements(arrayToOrder.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_mergeSort_medioCaso.csv", ordenArray);
++
++        // Quick Sort
++        System.out.println("Quick sort | Médio Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = quickSortByAchievements(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_quickSort_medioCaso.csv", ordenArray);
++
++        // Quick Sort com Mediana de 3
++        System.out.println("Quick sort (Mediana de 3) | Médio Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = quickSortByAchievementsMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
++
++        // Heap Sort
++        System.out.println("Heap sort | Médio Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = heapSortByAchievements(arrayToOrder.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_heapSort_medioCaso.csv", ordenArray);
++
++        // Counting Sort
++        System.out.println("Counting sort | Médio Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = countSortByAchievements(arrayToOrder.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_countingSort_medioCaso.csv", ordenArray);
++
++        System.out.println("\nPS: Para analise de melhor caso, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
++        Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_price_quickSort_medioCaso.csv");
++
++        CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
++        assert arrayBetterCase != null;
++        System.out.println("Ordenações por achievements Melhor caso:");
++
++        // Selection Sort
++        System.out.println("Selection sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = selectionSortByAchievements(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_selection_melhorCaso.csv", ordenArray);
++
++        // Insertion Sort
++        System.out.println("Insertion sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = insertionSortByAchievements(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_insertionSort_melhorCaso.csv", ordenArray);
++
++        // Merge Sort
++        System.out.println("Merge sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = mergeSortByAchievements(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_mergeSort_melhorCaso.csv", ordenArray);
++
++        // Quick Sort
++        System.out.println("Quick sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        //ordenArray = quickSortByAchievements(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        try {
++            ordenArray = quickSortByAchievements(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        } catch (StackOverflowError e) {
++            System.err.println("StackOverflowError capturado: " + e.getMessage());
++        }
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_quickSort_melhorCaso.csv", ordenArray);
++
++        // Quick Sort com Mediana de 3
++        System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = quickSortByAchievementsMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
++
++        // Heap Sort
++        System.out.println("Heap sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = heapSortByAchievements(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_heapSort_melhorCaso.csv", ordenArray);
++
++        // Counting Sort
++        System.out.println("Counting sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = countSortByAchievements(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_countingSort_melhorCaso.csv", ordenArray);
++
++
++        System.out.println("\nPS: Para analise de Pior caso, usaremos o array em ordem crescente.");
++        CSVRecord[] arrayWorstCase = getArray(pathToCsvOrden);
++        assert arrayWorstCase != null;
++        reverseArray(arrayWorstCase);
++        System.out.println("Ordenações por achievements Pior caso:");
++
++        // Selection Sort
++        System.out.println("Selection sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = selectionSortByAchievements(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_selection_piorCaso.csv", ordenArray);
++
++        // Insertion Sort
++        System.out.println("Insertion sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = insertionSortByAchievements(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_insertionSort_piorCaso.csv", ordenArray);
++
++        // Merge Sort
++        System.out.println("Merge sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = mergeSortByAchievements(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_achievements_piorCaso.csv", ordenArray);
++
++        // Quick Sort
++        System.out.println("Quick sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        try {
++            ordenArray = quickSortByAchievements(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        } catch (StackOverflowError e) {
++            System.err.println("StackOverflowError capturado: " + e.getMessage());
++        }
++        //ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_quickSort_piorCaso.csv", ordenArray);
++
++
++        // Quick Sort com Mediana de 3
++        System.out.println("Quick sort (Mediana de 3) | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = quickSortByAchievementsMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
++
++        // Heap Sort
++        System.out.println("Heap sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = heapSortByAchievements(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_heapSort_piorCaso.csv", ordenArray);
++
++        // Counting Sort
++        System.out.println("Counting sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = countSortByAchievements(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_achievements_countingSort_piorCaso.csv", ordenArray);
++    }
+ }
+Index: src/main/java/org/example/Main.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.example;\r\n\r\npublic class Main {\r\n    public static void main(String[] args) {\r\n        System.out.println(\"Hello world!\");\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/Main.java b/src/main/java/org/example/Main.java
+--- a/src/main/java/org/example/Main.java	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/src/main/java/org/example/Main.java	(date 1726949806548)
+@@ -1,7 +1,12 @@
+ package org.example;
+ 
++import java.io.IOException;
++
+ public class Main {
+-    public static void main(String[] args) {
+-        System.out.println("Hello world!");
++    public static void main(String[] args) throws IOException {
++        Transformations.mainTransformations();
++        OrdenationsByDate.mainOrdenationsByDate();
++        OrdenationsByPrice.mainOrdenationsByPrice();
++        OrdenationsByAchievements.mainOrdenationsByAchievements();
+     }
+ }
+\ No newline at end of file
+Index: src/main/java/org/example/OrdenationsByDate.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package org.example;\r\n\r\nimport com.opencsv.CSVReader;\r\nimport com.opencsv.CSVWriter;\r\nimport org.apache.commons.csv.CSVFormat;\r\nimport org.apache.commons.csv.CSVParser;\r\nimport org.apache.commons.csv.CSVPrinter;\r\nimport org.apache.commons.csv.CSVRecord;\r\n\r\nimport java.io.*;\r\nimport java.nio.file.Path;\r\nimport java.nio.file.Paths;\r\nimport java.sql.SQLOutput;\r\nimport java.time.LocalDate;\r\nimport java.time.format.DateTimeFormatter;\r\nimport java.util.List;\r\n\r\npublic class OrdenationsByDate {\r\n    public static CSVRecord[] selectionSortByDates(CSVRecord[] array){\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n        for (int index = 0; index < array.length-1; index++) {\r\n            int minorIndex = index;\r\n            for (int secondIndex = index + 1; secondIndex < array.length; secondIndex++) {\r\n                LocalDate date1 = LocalDate.parse(array[secondIndex].get(2), formatDate);\r\n                LocalDate date2 = LocalDate.parse(array[minorIndex].get(2), formatDate);\r\n                if (date1.isBefore(date2)) {\r\n                    minorIndex = secondIndex;\r\n                }\r\n            }\r\n            CSVRecord temp = array[minorIndex];\r\n            array[minorIndex] = array[index];\r\n            array[index] = temp;\r\n        }\r\n        return array;\r\n    }\r\n    public static CSVRecord[] inserrtionSortByDates(CSVRecord[] array){\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n        for (int index = 1; index < array.length; index++) {\r\n            CSVRecord minor = array[index];\r\n            int secondIndex = index - 1;\r\n            LocalDate minorValue = LocalDate.parse(minor.get(2), formatDate);\r\n\r\n            while (secondIndex >= 0) {\r\n                LocalDate date = LocalDate.parse(array[secondIndex].get(2), formatDate);\r\n\r\n                if (date.isAfter(minorValue)) {\r\n                    array[secondIndex + 1] = array[secondIndex];\r\n                } else {\r\n                    break;\r\n                }\r\n                secondIndex--;\r\n            }\r\n\r\n            array[secondIndex + 1] = minor;\r\n        }\r\n        return array;\r\n    }\r\n    public static CSVRecord[] mergeSortByDates(CSVRecord[] array) {\r\n        if (array.length <= 1) {\r\n            return null;\r\n        }\r\n        int mid = array.length / 2;\r\n        CSVRecord[] left = new CSVRecord[mid];\r\n        CSVRecord[] right = new CSVRecord[array.length - mid];\r\n\r\n        System.arraycopy(array, 0, left, 0, mid);\r\n        System.arraycopy(array, mid, right, 0, array.length - mid);\r\n\r\n        mergeSortByDates(left);\r\n        mergeSortByDates(right);\r\n\r\n        merge(array, left, right);\r\n\r\n        return array;\r\n    }\r\n\r\n    private static void merge(CSVRecord[] array, CSVRecord[] left, CSVRecord[] right) {\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        int i = 0, j = 0, k = 0;\r\n\r\n        while (i < left.length && j < right.length) {\r\n            LocalDate leftDate = LocalDate.parse(left[i].get(2), formatDate);\r\n            LocalDate rightDate = LocalDate.parse(right[j].get(2), formatDate);\r\n\r\n            if (leftDate.isBefore(rightDate) || leftDate.isEqual(rightDate)) {\r\n                array[k++] = left[i++];\r\n            } else {\r\n                array[k++] = right[j++];\r\n            }\r\n        }\r\n\r\n        while (i < left.length) {\r\n            array[k++] = left[i++];\r\n        }\r\n\r\n        while (j < right.length) {\r\n            array[k++] = right[j++];\r\n        }\r\n    }\r\n\r\n    public static int partition(CSVRecord[] array, int first, int last) {\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        LocalDate pivot = LocalDate.parse(array[last].get(2), formatDate);\r\n        int iterator = first - 1;\r\n\r\n        for (int index = first; index < last; index++) {\r\n            LocalDate currentDate = LocalDate.parse(array[index].get(2), formatDate);\r\n\r\n            if (currentDate.isBefore(pivot) || currentDate.isEqual(pivot)) {\r\n                iterator++;\r\n                CSVRecord temp = array[iterator];\r\n                array[iterator] = array[index];\r\n                array[index] = temp;\r\n            }\r\n        }\r\n\r\n        CSVRecord temp = array[iterator + 1];\r\n        array[iterator + 1] = array[last];\r\n        array[last] = temp;\r\n\r\n        return iterator + 1;\r\n    }\r\n\r\n    public static CSVRecord[] quickSortByDates(CSVRecord[] array, int first, int last) {\r\n        if (first < last) {\r\n            int pivotPosition = partition(array, first, last);\r\n\r\n            quickSortByDates(array, first, pivotPosition - 1);\r\n            quickSortByDates(array, pivotPosition + 1, last);\r\n        }\r\n        return array;\r\n    }\r\n\r\n    public static int medianOf3(CSVRecord[] array, int first, int mid, int last) {\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        LocalDate firstDate = LocalDate.parse(array[first].get(2), formatDate);\r\n        LocalDate midDate = LocalDate.parse(array[mid].get(2), formatDate);\r\n        LocalDate lastDate = LocalDate.parse(array[last].get(2), formatDate);\r\n\r\n        if ((firstDate.isBefore(midDate) && midDate.isBefore(lastDate)) || (lastDate.isBefore(midDate) && midDate.isBefore(firstDate))) {\r\n            return mid;\r\n        } else if ((midDate.isBefore(firstDate) && firstDate.isBefore(lastDate)) || (lastDate.isBefore(firstDate) && firstDate.isBefore(midDate))) {\r\n            return first;\r\n        } else {\r\n            return last;\r\n        }\r\n    }\r\n\r\n    public static int partitionMedian3(CSVRecord[] array, int first, int last) {\r\n        int mid = (first + last) / 2;\r\n        int median = medianOf3(array, first, mid, last);\r\n\r\n        CSVRecord temp = array[median];\r\n        array[median] = array[last];\r\n        array[last] = temp;\r\n\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n        LocalDate pivot = LocalDate.parse(array[last].get(2), formatDate);\r\n\r\n        int iterator = first - 1;\r\n\r\n        for (int index = first; index < last; index++) {\r\n            LocalDate currentDate = LocalDate.parse(array[index].get(2), formatDate);\r\n\r\n            if (currentDate.isBefore(pivot) || currentDate.isEqual(pivot)) {\r\n                iterator++;\r\n                CSVRecord swapTemp = array[iterator];\r\n                array[iterator] = array[index];\r\n                array[index] = swapTemp;\r\n            }\r\n        }\r\n\r\n        CSVRecord swapTemp = array[iterator + 1];\r\n        array[iterator + 1] = array[last];\r\n        array[last] = swapTemp;\r\n\r\n        return iterator + 1;\r\n    }\r\n\r\n    public static CSVRecord[] quickSortByDatesMedianOf3(CSVRecord[] array, int first, int last) {\r\n        if (first < last) {\r\n            int pivotPosition = partitionMedian3(array, first, last);\r\n            quickSortByDatesMedianOf3(array, first, pivotPosition - 1);\r\n            quickSortByDatesMedianOf3(array, pivotPosition + 1, last);\r\n        }\r\n\r\n        return array;\r\n    }\r\n\r\n    public static CSVRecord[] heapSortByDates(CSVRecord[] array) {\r\n        int n = array.length;\r\n\r\n        for (int i = n / 2 - 1; i >= 0; i--) {\r\n            heapify(array, n, i);\r\n        }\r\n\r\n        for (int i = n - 1; i > 0; i--) {\r\n            CSVRecord temp = array[i];\r\n            array[i] = array[0];\r\n            array[0] = temp;\r\n\r\n            heapify(array, i, 0);\r\n        }\r\n        return array;\r\n    }\r\n\r\n    private static void heapify(CSVRecord[] array, int n, int i) {\r\n        int largest = i;\r\n        int left = 2 * i + 1;\r\n        int right = 2 * i + 2;\r\n\r\n        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern(\"dd/MM/yyyy\");\r\n\r\n        if (left < n && LocalDate.parse(array[left].get(2), formatDate).isAfter(LocalDate.parse(array[largest].get(2), formatDate))) {\r\n            largest = left;\r\n        }\r\n\r\n        if (right < n && LocalDate.parse(array[right].get(2), formatDate).isAfter(LocalDate.parse(array[largest].get(2), formatDate))) {\r\n            largest = right;\r\n        }\r\n\r\n        if (largest != i) {\r\n            CSVRecord swap = array[i];\r\n            array[i] = array[largest];\r\n            array[largest] = swap;\r\n\r\n            heapify(array, n, largest);\r\n        }\r\n    }\r\n    public static CSVRecord[] getArrayMediumcase(Path filePath) throws IOException {\r\n        File file = filePath.toFile();\r\n        File outputFile = new File(file.getParent(),\"games_release_date_selectionSort_medioCaso.csv\");\r\n\r\n        try (\r\n                Reader reader = new FileReader(file);\r\n                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());\r\n        ) {\r\n            List<CSVRecord> records = csvParser.getRecords();\r\n\r\n            CSVRecord[] array = new CSVRecord[records.size()];\r\n            for (int i = 0; i < records.size(); i++) {\r\n                array[i] = records.get(i);\r\n            }\r\n            return array;\r\n        } catch (IOException e) {\r\n            System.out.println(e.getMessage());\r\n            return null;\r\n        }\r\n\r\n    }\r\n    public static void writeToCvs (String fileName,CSVRecord[] array) throws IOException {\r\n        Path databasePath = Paths.get(\"src\\\\main\\\\java\\\\database\");\r\n        File outputFile = new File(databasePath.toString(), fileName);\r\n\r\n        try (\r\n                Writer writer = new FileWriter(outputFile);\r\n                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader());\r\n        ) {\r\n            for (int i = 0; i < array.length; i++) {\r\n                printer.printRecord(array[i]);\r\n            }\r\n        }catch (IOException e) {\r\n            System.out.println(e.getMessage());\r\n        }\r\n    }\r\n    public static void main(String[] args) throws IOException {\r\n\r\n        Path pathToGamesFormated = Paths.get(\"src\\\\main\\\\java\\\\database\\\\games_formated_release_data.csv\");\r\n        CSVRecord[] arrayToOrder = getArrayMediumcase(pathToGamesFormated);\r\n        assert arrayToOrder != null;\r\n        CSVRecord[] ordenArray;\r\n        System.out.println(\"Ordenações por datas:\");\r\n        /*\r\n        // Selection Sort\r\n        System.out.println(\"Selection sort | Médio Caso:\");\r\n        long startTime = System.currentTimeMillis();\r\n        ordenArray = selectionSortByDates(arrayToOrder.clone());\r\n        long endTime = System.currentTimeMillis();\r\n        long duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_insertionSort_medioCaso.csv\", ordenArray);\r\n\r\n        // Insertion Sort\r\n        System.out.println(\"Insertion sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = inserrtionSortByDates(arrayToOrder.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_insertionSort_medioCaso.csv\", ordenArray);\r\n        */\r\n        // Merge Sort\r\n        System.out.println(\"Merge sort | Médio Caso:\");\r\n        long startTime = System.currentTimeMillis();\r\n        ordenArray = mergeSortByDates(arrayToOrder.clone());\r\n        long endTime = System.currentTimeMillis();\r\n        long duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_mergeSort_medioCaso.csv\", ordenArray);\r\n        /*\r\n        // Quick Sort\r\n        System.out.println(\"Quick sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = quickSortByDates(arrayToOrder.clone(), 0, arrayToOrder.length - 1);\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_medioCaso.csv\", ordenArray);\r\n\r\n        // Quick Sort com Mediana de 3\r\n        System.out.println(\"Quick sort (Mediana de 3) | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = quickSortByDatesMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_quickSort_mediana_de_3_medioCaso.csv\", ordenArray);\r\n\r\n        // Heap Sort\r\n        System.out.println(\"Heap sort | Médio Caso:\");\r\n        startTime = System.currentTimeMillis();\r\n        ordenArray = heapSortByDates(arrayToOrder.clone());\r\n        endTime = System.currentTimeMillis();\r\n        duration = endTime - startTime;\r\n        System.out.println(\"Tempo de execução: \" + duration + \" Millisegundos\");\r\n        writeToCvs(\"games_release_date_heapSort_medioCaso.csv\", ordenArray);*/\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/OrdenationsByDate.java b/src/main/java/org/example/OrdenationsByDate.java
+--- a/src/main/java/org/example/OrdenationsByDate.java	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/src/main/java/org/example/OrdenationsByDate.java	(date 1726949806583)
+@@ -1,7 +1,5 @@
+ package org.example;
+ 
+-import com.opencsv.CSVReader;
+-import com.opencsv.CSVWriter;
+ import org.apache.commons.csv.CSVFormat;
+ import org.apache.commons.csv.CSVParser;
+ import org.apache.commons.csv.CSVPrinter;
+@@ -10,7 +8,6 @@
+ import java.io.*;
+ import java.nio.file.Path;
+ import java.nio.file.Paths;
+-import java.sql.SQLOutput;
+ import java.time.LocalDate;
+ import java.time.format.DateTimeFormatter;
+ import java.util.List;
+@@ -33,7 +30,7 @@
+         }
+         return array;
+     }
+-    public static CSVRecord[] inserrtionSortByDates(CSVRecord[] array){
++    public static CSVRecord[] insertionSortByDates(CSVRecord[] array){
+         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+         for (int index = 1; index < array.length; index++) {
+             CSVRecord minor = array[index];
+@@ -57,7 +54,7 @@
+     }
+     public static CSVRecord[] mergeSortByDates(CSVRecord[] array) {
+         if (array.length <= 1) {
+-            return null;
++            return array;
+         }
+         int mid = array.length / 2;
+         CSVRecord[] left = new CSVRecord[mid];
+@@ -230,9 +227,8 @@
+             heapify(array, n, largest);
+         }
+     }
+-    public static CSVRecord[] getArrayMediumcase(Path filePath) throws IOException {
++    public static CSVRecord[] getArray(Path filePath) throws IOException {
+         File file = filePath.toFile();
+-        File outputFile = new File(file.getParent(),"games_release_date_selectionSort_medioCaso.csv");
+ 
+         try (
+                 Reader reader = new FileReader(file);
+@@ -254,11 +250,15 @@
+     public static void writeToCvs (String fileName,CSVRecord[] array) throws IOException {
+         Path databasePath = Paths.get("src\\main\\java\\database");
+         File outputFile = new File(databasePath.toString(), fileName);
++        File fileToGetHeader = new File(databasePath.toString(),"portuguese_supported_games.csv");
+ 
+         try (
+                 Writer writer = new FileWriter(outputFile);
+-                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader());
++                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
++                Reader reader = new FileReader(fileToGetHeader);
++                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+         ) {
++            printer.printRecord(csvParser.getHeaderMap().keySet());
+             for (int i = 0; i < array.length; i++) {
+                 printer.printRecord(array[i]);
+             }
+@@ -266,41 +266,55 @@
+             System.out.println(e.getMessage());
+         }
+     }
+-    public static void main(String[] args) throws IOException {
++    public static void reverseArray(CSVRecord[] arrayWorstCase){
++        int start = 0;
++        int end = arrayWorstCase.length - 1;
++
++        while (start < end) {
++            CSVRecord swap = arrayWorstCase[start];
++            arrayWorstCase[start] = arrayWorstCase[end];
++            arrayWorstCase[end] = swap;
++
++            start++;
++            end--;
++        }
++    }
++    public static void mainOrdenationsByDate() throws IOException {
+ 
+         Path pathToGamesFormated = Paths.get("src\\main\\java\\database\\games_formated_release_data.csv");
+-        CSVRecord[] arrayToOrder = getArrayMediumcase(pathToGamesFormated);
++        CSVRecord[] arrayToOrder = getArray(pathToGamesFormated);
+         assert arrayToOrder != null;
++        long startTime, endTime, duration;
+         CSVRecord[] ordenArray;
+-        System.out.println("Ordenações por datas:");
+-        /*
++        System.out.println("Ordenações por datas Medio caso:");
++
+         // Selection Sort
+         System.out.println("Selection sort | Médio Caso:");
+-        long startTime = System.currentTimeMillis();
++        startTime = System.currentTimeMillis();
+         ordenArray = selectionSortByDates(arrayToOrder.clone());
+-        long endTime = System.currentTimeMillis();
+-        long duration = endTime - startTime;
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_insertionSort_medioCaso.csv", ordenArray);
++        writeToCvs("games_release_date_selectionSort_medioCaso.csv", ordenArray);
+ 
+         // Insertion Sort
+         System.out.println("Insertion sort | Médio Caso:");
+         startTime = System.currentTimeMillis();
+-        ordenArray = inserrtionSortByDates(arrayToOrder.clone());
++        ordenArray = insertionSortByDates(arrayToOrder.clone());
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+         writeToCvs("games_release_date_insertionSort_medioCaso.csv", ordenArray);
+-        */
++
+         // Merge Sort
+         System.out.println("Merge sort | Médio Caso:");
+-        long startTime = System.currentTimeMillis();
++        startTime = System.currentTimeMillis();
+         ordenArray = mergeSortByDates(arrayToOrder.clone());
+-        long endTime = System.currentTimeMillis();
+-        long duration = endTime - startTime;
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+         writeToCvs("games_release_date_mergeSort_medioCaso.csv", ordenArray);
+-        /*
++
+         // Quick Sort
+         System.out.println("Quick sort | Médio Caso:");
+         startTime = System.currentTimeMillis();
+@@ -326,6 +340,139 @@
+         endTime = System.currentTimeMillis();
+         duration = endTime - startTime;
+         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+-        writeToCvs("games_release_date_heapSort_medioCaso.csv", ordenArray);*/
++        writeToCvs("games_release_date_heapSort_medioCaso.csv", ordenArray);
++
++        System.out.println("\nPS: Para analise de melhor caso, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
++        Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_release_date_mergeSort_medioCaso.csv");
++
++        CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
++        assert arrayBetterCase != null;
++        System.out.println("Ordenações por datas Melhor caso:");
++
++        // Selection Sort
++        System.out.println("Selection sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = selectionSortByDates(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_selection_melhorCaso.csv", ordenArray);
++
++        // Insertion Sort
++        System.out.println("Insertion sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = insertionSortByDates(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_insertionSort_melhorCaso.csv", ordenArray);
++
++        // Merge Sort
++        System.out.println("Merge sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = mergeSortByDates(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_mergeSort_melhorCaso.csv", ordenArray);
++
++        // Quick Sort
++        System.out.println("Quick sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        try {
++            ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        } catch (StackOverflowError e) {
++            System.err.println("StackOverflowError capturado: " + e.getMessage());
++        }
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_quickSort_melhorCaso.csv", ordenArray);
++
++        // Quick Sort com Mediana de 3
++        System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = quickSortByDatesMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
++
++        // Heap Sort
++        System.out.println("Heap sort | Melhor Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = heapSortByDates(arrayBetterCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_heapSort_melhorCaso.csv", ordenArray);
++
++        System.out.println("\nPS: Para analise de Pior caso, usaremos o array em ordem descrescente.");
++        CSVRecord[] arrayWorstCase = getArray(pathToCsvOrden);
++        assert arrayWorstCase != null;
++        reverseArray(arrayWorstCase);
++        System.out.println("Ordenações por datas Pior caso:");
++
++        // Selection Sort
++        System.out.println("Selection sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = selectionSortByDates(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_selection_piorCaso.csv", ordenArray);
++
++        // Insertion Sort
++        System.out.println("Insertion sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = insertionSortByDates(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_insertionSort_piorCaso.csv", ordenArray);
++
++        // Merge Sort
++        System.out.println("Merge sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = mergeSortByDates(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_mergeSort_piorCaso.csv", ordenArray);
++
++        // Quick Sort
++        System.out.println("Quick sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        try {
++            ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        } catch (StackOverflowError e) {
++            System.err.println("StackOverflowError capturado: " + e.getMessage());
++        }
++        //ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_quickSort_piorCaso.csv", ordenArray);
++
++
++        // Quick Sort com Mediana de 3
++        System.out.println("Quick sort (Mediana de 3) | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = quickSortByDatesMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
++
++        // Heap Sort
++        System.out.println("Heap sort | Pior Caso:");
++        startTime = System.currentTimeMillis();
++        ordenArray = heapSortByDates(arrayWorstCase.clone());
++        endTime = System.currentTimeMillis();
++        duration = endTime - startTime;
++        System.out.println("Tempo de execução: " + duration + " Millisegundos");
++        writeToCvs("games_release_date_heapSort_piorCaso.csv", ordenArray);
++
+     }
+ }
+Index: .gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>target/\r\n!.mvn/wrapper/maven-wrapper.jar\r\n!**/src/main/**/target/\r\n!**/src/test/**/target/\r\n\r\n### IntelliJ IDEA ###\r\n.idea/modules.xml\r\n.idea/jarRepositories.xml\r\n.idea/compiler.xml\r\n.idea/libraries/\r\n*.iws\r\n*.iml\r\n*.ipr\r\nsrc\\main\\java\\database\\*.csv\r\n\r\n### Eclipse ###\r\n.apt_generated\r\n.classpath\r\n.factorypath\r\n.project\r\n.settings\r\n.springBeans\r\n.sts4-cache\r\n\r\n### NetBeans ###\r\n/nbproject/private/\r\n/nbbuild/\r\n/dist/\r\n/nbdist/\r\n/.nb-gradle/\r\nbuild/\r\n!**/src/main/**/build/\r\n!**/src/test/**/build/\r\n\r\n### VS Code ###\r\n.vscode/\r\n\r\n### Mac OS ###\r\n.DS_Store
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gitignore b/.gitignore
+--- a/.gitignore	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/.gitignore	(date 1726949806604)
+@@ -11,7 +11,7 @@
+ *.iws
+ *.iml
+ *.ipr
+-src\main\java\database\*.csv
++*.csv
+ 
+ ### Eclipse ###
+ .apt_generated
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\r\n         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n    <modelVersion>4.0.0</modelVersion>\r\n\r\n    <groupId>org.example</groupId>\r\n    <artifactId>untitled</artifactId>\r\n    <version>1.0-SNAPSHOT</version>\r\n\r\n    <properties>\r\n        <maven.compiler.source>22</maven.compiler.source>\r\n        <maven.compiler.target>22</maven.compiler.target>\r\n        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>\r\n    </properties>\r\n\r\n    <dependencies>\r\n        <dependency>\r\n            <groupId>junit</groupId>\r\n            <artifactId>junit</artifactId>\r\n            <version>4.12</version>\r\n            <scope>test</scope>\r\n        </dependency>\r\n        <dependency>\r\n            <groupId>com.opencsv</groupId>\r\n            <artifactId>opencsv</artifactId>\r\n            <version>5.5.2</version>\r\n        </dependency>\r\n    </dependencies>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pom.xml b/pom.xml
+--- a/pom.xml	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/pom.xml	(date 1726949806623)
+@@ -16,15 +16,20 @@
+ 
+     <dependencies>
+         <dependency>
+-            <groupId>junit</groupId>
+-            <artifactId>junit</artifactId>
+-            <version>4.12</version>
+-            <scope>test</scope>
++            <groupId>org.apache.commons</groupId>
++            <artifactId>commons-csv</artifactId>
++            <version>1.11.0</version>
++        </dependency>
++        <dependency>
++            <groupId>commons-codec</groupId>
++            <artifactId>commons-codec</artifactId>
++            <version>1.17.1</version>
+         </dependency>
+         <dependency>
+-            <groupId>com.opencsv</groupId>
+-            <artifactId>opencsv</artifactId>
+-            <version>5.5.2</version>
++            <groupId>commons-io</groupId>
++            <artifactId>commons-io</artifactId>
++            <version>2.13.0</version>
+         </dependency>
++
+     </dependencies>
+ </project>
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"663a02a9-a863-4ccb-b438-5c9d0c306856\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Class\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\"><![CDATA[{\r\n  \"lastFilter\": {\r\n    \"state\": \"OPEN\",\r\n    \"assignee\": \"LucasnProg\"\r\n  }\r\n}]]></component>\r\n  <component name=\"GithubPullRequestsUISettings\"><![CDATA[{\r\n  \"selectedUrlAndAccountId\": {\r\n    \"url\": \"https://github.com/LucasnProg/SteamGamesProject.git\",\r\n    \"accountId\": \"e1803be0-77bd-4919-85a4-30a48cd5e75e\"\r\n  }\r\n}]]></component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 1\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2m3mO0GYwaWYAMnLXdSkPIlqozA\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;Application.Transformations.executor&quot;: &quot;Run&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;main&quot;,\r\n    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,\r\n    &quot;last_opened_file_path&quot;: &quot;C:/Users/Lucas/LEDA/SteamGames/Steam_Project&quot;\r\n  }\r\n}</component>\r\n  <component name=\"RunManager\">\r\n    <configuration default=\"true\" type=\"JetRunConfigurationType\">\r\n      <module name=\"Steam_Project\" />\r\n      <method v=\"2\">\r\n        <option name=\"Make\" enabled=\"true\" />\r\n      </method>\r\n    </configuration>\r\n    <configuration default=\"true\" type=\"KotlinStandaloneScriptRunConfigurationType\">\r\n      <module name=\"Steam_Project\" />\r\n      <option name=\"filePath\" />\r\n      <method v=\"2\">\r\n        <option name=\"Make\" enabled=\"true\" />\r\n      </method>\r\n    </configuration>\r\n    <configuration default=\"true\" type=\"PythonConfigurationType\" factoryName=\"Python\">\r\n      <module name=\"Steam_Project\" />\r\n      <option name=\"ENV_FILES\" value=\"\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration default=\"true\" type=\"Tox\" factoryName=\"Tox\">\r\n      <module name=\"Steam_Project\" />\r\n      <option name=\"ENV_FILES\" value=\"\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration default=\"true\" type=\"docs\" factoryName=\"Docutils task\">\r\n      <module name=\"Steam_Project\" />\r\n      <option name=\"ENV_FILES\" value=\"\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"docutils_input_file\" value=\"\" />\r\n      <option name=\"docutils_output_file\" value=\"\" />\r\n      <option name=\"docutils_params\" value=\"\" />\r\n      <option name=\"docutils_task\" value=\"\" />\r\n      <option name=\"docutils_open_in_browser\" value=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration default=\"true\" type=\"docs\" factoryName=\"Sphinx task\">\r\n      <module name=\"Steam_Project\" />\r\n      <option name=\"ENV_FILES\" value=\"\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"docutils_input_file\" value=\"\" />\r\n      <option name=\"docutils_output_file\" value=\"\" />\r\n      <option name=\"docutils_params\" value=\"\" />\r\n      <option name=\"docutils_task\" value=\"\" />\r\n      <option name=\"docutils_open_in_browser\" value=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"663a02a9-a863-4ccb-b438-5c9d0c306856\" name=\"Changes\" comment=\"\" />\r\n      <created>1726313602132</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1726313602132</updated>\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"RECENT_FILTERS\">\r\n      <map>\r\n        <entry key=\"User\">\r\n          <value>\r\n            <list>\r\n              <RecentGroup>\r\n                <option name=\"FILTER_VALUES\">\r\n                  <option value=\"*\" />\r\n                </option>\r\n              </RecentGroup>\r\n            </list>\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State>\r\n              <option name=\"FILTERS\">\r\n                <map>\r\n                  <entry key=\"branch\">\r\n                    <value>\r\n                      <list>\r\n                        <option value=\"main\" />\r\n                      </list>\r\n                    </value>\r\n                  </entry>\r\n                </map>\r\n              </option>\r\n            </State>\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision e7bb61f3e3bad52a886d5d5817c4f276b25bbf9f)
++++ b/.idea/workspace.xml	(date 1726949806658)
+@@ -6,6 +6,12 @@
+   <component name="ChangeListManager">
+     <list default="true" id="663a02a9-a863-4ccb-b438-5c9d0c306856" name="Changes" comment="">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByAchievements.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByAchievements.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByDate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByDate.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByPrice.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByPrice.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Transformations.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Transformations.java" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -22,18 +28,18 @@
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+   </component>
+-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+-  "lastFilter": {
+-    "state": "OPEN",
+-    "assignee": "LucasnProg"
++  <component name="GitHubPullRequestSearchHistory">{
++  &quot;lastFilter&quot;: {
++    &quot;state&quot;: &quot;OPEN&quot;,
++    &quot;assignee&quot;: &quot;LucasnProg&quot;
+   }
+-}]]></component>
+-  <component name="GithubPullRequestsUISettings"><![CDATA[{
+-  "selectedUrlAndAccountId": {
+-    "url": "https://github.com/LucasnProg/SteamGamesProject.git",
+-    "accountId": "e1803be0-77bd-4919-85a4-30a48cd5e75e"
++}</component>
++  <component name="GithubPullRequestsUISettings">{
++  &quot;selectedUrlAndAccountId&quot;: {
++    &quot;url&quot;: &quot;https://github.com/LucasnProg/SteamGamesProject.git&quot;,
++    &quot;accountId&quot;: &quot;e1803be0-77bd-4919-85a4-30a48cd5e75e&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="ProjectColorInfo">{
+   &quot;associatedIndex&quot;: 1
+ }</component>
+@@ -43,15 +49,19 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent">{
+-  &quot;keyToString&quot;: {
+-    &quot;Application.Transformations.executor&quot;: &quot;Run&quot;,
+-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Lucas/LEDA/SteamGames/Steam_Project&quot;
++  <component name="PropertiesComponent"><![CDATA[{
++  "keyToString": {
++    "Application.Ordenations.executor": "Run",
++    "Application.OrdenationsByDate.executor": "Run",
++    "Application.Transformations.executor": "Run",
++    "Application.TransformationsTest.executor": "Run",
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "git-widget-placeholder": "master",
++    "kotlin-language-version-configured": "true",
++    "last_opened_file_path": "C:/Users/Lucas/LEDA/SteamGames/Steam_Project",
++    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices"
+   }
+-}</component>
++}]]></component>
+   <component name="RunManager">
+     <configuration default="true" type="JetRunConfigurationType">
+       <module name="Steam_Project" />
+@@ -172,7 +182,7 @@
+                   <entry key="branch">
+                     <value>
+                       <list>
+-                        <option value="main" />
++                        <option value="master" />
+                       </list>
+                     </value>
+                   </entry>
