@@ -119,6 +119,5 @@ public class Transformations {
         getPortugueseGames(pathToGamesFormated);
     }
 
-
 }
 

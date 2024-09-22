@@ -302,22 +302,24 @@ public class OrdenationsByPrice {
         writeToCvs("games_price_mergeSort_medioCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Médio Caso:");
+        System.out.println("Quick sort | Médio Caso: \n(STACKOVERFLOW)");
+        /*
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPrices(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_medioCaso.csv", ordenArray);
+        writeToCvs("games_price_quickSort_medioCaso.csv", ordenArray);*/
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Médio Caso:");
+        System.out.println("Quick sort (Mediana de 3) | Médio Caso: \n(STACKOVERFLOW)");
+        /*
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPricesMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
+        writeToCvs("games_price_quickSort_mediana_de_3_medioCaso.csv", ordenArray);*/
 
         // Heap Sort
         System.out.println("Heap sort | Médio Caso:");
@@ -329,7 +331,7 @@ public class OrdenationsByPrice {
         writeToCvs("games_price_heapSort_medioCaso.csv", ordenArray);
 
         System.out.println("\nPS: Para analise de melhor caso, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
-        Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_price_quickSort_medioCaso.csv");
+        Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_price_heapSort_medioCaso.csv");
 
         CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
         assert arrayBetterCase != null;
@@ -342,7 +344,7 @@ public class OrdenationsByPrice {
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_selection_melhorCaso.csv", ordenArray);
+        writeToCvs("games_price_selectionSort_melhorCaso.csv", ordenArray);
 
         // Insertion Sort
         System.out.println("Insertion sort | Melhor Caso:");
@@ -363,7 +365,8 @@ public class OrdenationsByPrice {
         writeToCvs("games_price_mergeSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Melhor Caso:");
+        System.out.println("Quick sort | Melhor Caso: \n(STACKOVERFLOW)");
+        /*
         startTime = System.currentTimeMillis();
         //ordenArray = quickSortByPrices(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
         try {
@@ -374,16 +377,17 @@ public class OrdenationsByPrice {
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_melhorCaso.csv", ordenArray);
+        writeToCvs("games_price_quickSort_melhorCaso.csv", ordenArray);*/
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
+        System.out.println("Quick sort (Mediana de 3) | Melhor Caso: \n(STACKOVERFLOW)");
+        /*
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPricesMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
+        writeToCvs("games_price_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);*/
 
         // Heap Sort
         System.out.println("Heap sort | Melhor Caso:");
@@ -398,7 +402,7 @@ public class OrdenationsByPrice {
         CSVRecord[] arrayWorstCase = getArray(pathToCsvOrden);
         assert arrayWorstCase != null;
         reverseArray(arrayWorstCase);
-        System.out.println("Ordenações por datas Pior caso:");
+        System.out.println("Ordenações por Preço Pior caso:");
 
         // Selection Sort
         System.out.println("Selection sort | Pior Caso:");
@@ -407,7 +411,7 @@ public class OrdenationsByPrice {
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_selection_piorCaso.csv", ordenArray);
+        writeToCvs("games_price_selectionSort_piorCaso.csv", ordenArray);
 
         // Insertion Sort
         System.out.println("Insertion sort | Pior Caso:");
@@ -428,7 +432,8 @@ public class OrdenationsByPrice {
         writeToCvs("games_price_mergeSort_piorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Pior Caso:");
+        System.out.println("Quick sort | Pior Caso: \n(STACKOVERFLOW)");
+        /*
         startTime = System.currentTimeMillis();
         try {
             ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
@@ -439,17 +444,18 @@ public class OrdenationsByPrice {
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_piorCaso.csv", ordenArray);
+        writeToCvs("games_price_quickSort_piorCaso.csv", ordenArray);*/
 
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Pior Caso:");
+        System.out.println("Quick sort (Mediana de 3) | Pior Caso: \n(STACKOVERFLOW)");
+        /*
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPricesMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
+        writeToCvs("games_price_quickSort_mediana_de_3_piorCaso.csv", ordenArray);*/
 
         // Heap Sort
         System.out.println("Heap sort | Pior Caso:");

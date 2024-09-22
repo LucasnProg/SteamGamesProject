@@ -345,6 +345,7 @@ public class OrdenationsByDate {
         System.out.println("\nPS: Para analise de melhor caso, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
         Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_release_date_mergeSort_medioCaso.csv");
 
+
         CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
         assert arrayBetterCase != null;
         System.out.println("Ordenações por datas Melhor caso:");
@@ -377,7 +378,8 @@ public class OrdenationsByDate {
         writeToCvs("games_release_date_mergeSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Melhor Caso:");
+        System.out.println("Quick sort | Melhor Caso: \n(STACKOVERFLOW)");
+        /*
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
         try {
@@ -388,7 +390,7 @@ public class OrdenationsByDate {
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_release_date_quickSort_melhorCaso.csv", ordenArray);
+        writeToCvs("games_release_date_quickSort_melhorCaso.csv", ordenArray);*/
 
         // Quick Sort com Mediana de 3
         System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
@@ -442,18 +444,20 @@ public class OrdenationsByDate {
         writeToCvs("games_release_date_mergeSort_piorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Pior Caso:");
+
+        System.out.println("Quick sort | Pior Caso: \n");
+        /*
         startTime = System.currentTimeMillis();
         try {
             ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         } catch (StackOverflowError e) {
             System.err.println("StackOverflowError capturado: " + e.getMessage());
         }
-        //ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+        ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_release_date_quickSort_piorCaso.csv", ordenArray);
+        writeToCvs("games_release_date_quickSort_piorCaso.csv", ordenArray);*/
 
 
         // Quick Sort com Mediana de 3
