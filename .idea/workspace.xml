@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="663a02a9-a863-4ccb-b438-5c9d0c306856" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByAchievements.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByAchievements.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByDate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByDate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByPrice.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/OrdenationsByPrice.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Transformations.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Transformations.java" afterDir="false" />
-    </list>
+    <list default="true" id="663a02a9-a863-4ccb-b438-5c9d0c306856" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
