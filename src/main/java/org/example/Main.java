@@ -8,5 +8,7 @@ public class Main {
         OrdenationsByDate.mainOrdenationsByDate();
         OrdenationsByPrice.mainOrdenationsByPrice();
         OrdenationsByAchievements.mainOrdenationsByAchievements();
+
+        //Fazer JavaDoc e mudar nome de variaveis com uma so letra
     }
 }

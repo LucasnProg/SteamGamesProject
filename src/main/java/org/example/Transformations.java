@@ -73,7 +73,7 @@ public class Transformations {
 
         ) {
             for (CSVRecord record : csvParser) {
-                if ("True".equals(record.get("Linux"))){
+                if (Boolean.parseBoolean(record.get("Linux"))){
                     csvPrinter.printRecord(record);
                 }
             }
@@ -117,7 +117,24 @@ public class Transformations {
         toReleaseDate(pathToGames);
         getLinuxGames(pathToGamesFormated);
         getPortugueseGames(pathToGamesFormated);
-    }
+        //Path path = Paths.get("src\\main\\java\\database\\games_achievements_heapSort_medioCaso.csv");
+        //checkOrders(path);
 
+    }
+    public static void checkOrders(Path filePath) throws IOException {
+        File games = filePath.toFile();
+
+        try (
+                Reader reader = new FileReader(games);
+                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+        ) {
+            for (CSVRecord record : csvParser) {
+                System.out.print(record.get(26)+" | ");
+            }
+        } catch (IOException e) {
+            System.out.println("Erro: "+e.getMessage());
+        }
+
+    }
 }
 

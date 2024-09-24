@@ -83,7 +83,6 @@ public class OrdenationsByAchievements {
         }
     }
 
-
     public static int partition(CSVRecord[] array, int first, int last) {
         int pivot = Integer.parseInt(array[last].get(26));
         int iterator = first - 1;
@@ -107,15 +106,19 @@ public class OrdenationsByAchievements {
     }
 
     public static CSVRecord[] quickSortByAchievements(CSVRecord[] array, int first, int last) {
-        if (first < last) {
+        while (first < last) {
             int pivotPosition = partition(array, first, last);
 
-            quickSortByAchievements(array, first, pivotPosition - 1);
-            quickSortByAchievements(array, pivotPosition + 1, last);
+            if (pivotPosition - first < last - pivotPosition) {
+                quickSortByAchievements(array, first, pivotPosition - 1);
+                first = pivotPosition + 1;
+            } else {
+                quickSortByAchievements(array, pivotPosition + 1, last);
+                last = pivotPosition - 1;
+            }
         }
         return array;
     }
-
 
     public static int medianOf3(CSVRecord[] array, int first, int mid, int last) {
         double firstPrice = Double.parseDouble(array[first].get(26));
@@ -140,7 +143,6 @@ public class OrdenationsByAchievements {
         array[last] = temp;
 
         double pivot = Double.parseDouble(array[last].get(26));
-
         int iterator = first - 1;
 
         for (int index = first; index < last; index++) {
@@ -162,52 +164,56 @@ public class OrdenationsByAchievements {
     }
 
     public static CSVRecord[] quickSortByAchievementsMedianOf3(CSVRecord[] array, int first, int last) {
-        if (first < last) {
+        while (first < last) {
             int pivotPosition = partitionMedian3(array, first, last);
 
-            quickSortByAchievementsMedianOf3(array, first, pivotPosition - 1);
-            quickSortByAchievementsMedianOf3(array, pivotPosition + 1, last);
+            if (pivotPosition - first < last - pivotPosition) {
+                quickSortByAchievementsMedianOf3(array, first, pivotPosition - 1);
+                first = pivotPosition + 1;
+            } else {
+                quickSortByAchievementsMedianOf3(array, pivotPosition + 1, last);
+                last = pivotPosition - 1;
+            }
         }
-
         return array;
     }
 
     public static CSVRecord[] heapSortByAchievements(CSVRecord[] array) {
-        int n = array.length;
+        int totalRecords = array.length;
 
-        for (int i = n / 2 - 1; i >= 0; i--) {
-            heapify(array, n, i);
+        for (int currentIndex = totalRecords / 2 - 1; currentIndex >= 0; currentIndex--) {
+            heapify(array, totalRecords, currentIndex);
         }
 
-        for (int i = n - 1; i > 0; i--) {
-            CSVRecord temp = array[i];
-            array[i] = array[0];
-            array[0] = temp;
+        for (int currentIndex = totalRecords - 1; currentIndex > 0; currentIndex--) {
+            CSVRecord temporaryRecord = array[0];
+            array[0] = array[currentIndex];
+            array[currentIndex] = temporaryRecord;
 
-            heapify(array, i, 0);
+            heapify(array, currentIndex, 0);
         }
         return array;
     }
 
-    private static void heapify(CSVRecord[] array, int n, int i) {
-        int largest = i;
-        int left = 2 * i + 1;
-        int right = 2 * i + 2;
+    private static void heapify(CSVRecord[] array, int heapSize, int rootIndex) {
+        int smallestIndex = rootIndex;
+        int leftChildIndex = 2 * rootIndex + 1;
+        int rightChildIndex = 2 * rootIndex + 2;
 
-        if (left < n && Integer.parseInt(array[left].get(26)) > Integer.parseInt(array[largest].get(26))) {
-            largest = left;
+        if (leftChildIndex < heapSize && Integer.parseInt(array[leftChildIndex].get(26)) < Integer.parseInt(array[smallestIndex].get(26))) {
+            smallestIndex = leftChildIndex;
         }
 
-        if (right < n && Integer.parseInt(array[right].get(26)) > Integer.parseInt(array[largest].get(26))) {
-            largest = right;
+        if (rightChildIndex < heapSize && Integer.parseInt(array[rightChildIndex].get(26)) < Integer.parseInt(array[smallestIndex].get(26))) {
+            smallestIndex = rightChildIndex;
         }
 
-        if (largest != i) {
-            CSVRecord swap = array[i];
-            array[i] = array[largest];
-            array[largest] = swap;
+        if (smallestIndex != rootIndex) {
+            CSVRecord temporaryRecord = array[rootIndex];
+            array[rootIndex] = array[smallestIndex];
+            array[smallestIndex] = temporaryRecord;
 
-            heapify(array, n, largest);
+            heapify(array, heapSize, smallestIndex);
         }
     }
     public static CSVRecord[] countSortByAchievements(CSVRecord[] array) {
@@ -329,24 +335,22 @@ public class OrdenationsByAchievements {
         writeToCvs("games_achievements_mergeSort_medioCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Médio Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort | Médio Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByAchievements(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_quickSort_medioCaso.csv", ordenArray);*/
+        writeToCvs("games_achievements_quickSort_medioCaso.csv", ordenArray);
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Médio Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort (Mediana de 3) | Médio Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByAchievementsMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_quickSort_mediana_de_3_medioCaso.csv", ordenArray);*/
+        writeToCvs("games_achievements_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
 
         // Heap Sort
         System.out.println("Heap sort | Médio Caso:");
@@ -380,7 +384,7 @@ public class OrdenationsByAchievements {
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_selection_melhorCaso.csv", ordenArray);
+        writeToCvs("games_achievements_selectionSort_melhorCaso.csv", ordenArray);
 
         // Insertion Sort
         System.out.println("Insertion sort | Melhor Caso:");
@@ -401,29 +405,22 @@ public class OrdenationsByAchievements {
         writeToCvs("games_achievements_mergeSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Melhor Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort | Melhor Caso: ");
         startTime = System.currentTimeMillis();
-        //ordenArray = quickSortByAchievements(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
-        try {
-            ordenArray = quickSortByAchievements(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
-        } catch (StackOverflowError e) {
-            System.err.println("StackOverflowError capturado: " + e.getMessage());
-        }
+        ordenArray = quickSortByAchievements(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_quickSort_melhorCaso.csv", ordenArray);*/
+        writeToCvs("games_achievements_quickSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Melhor Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByAchievementsMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);*/
+        writeToCvs("games_achievements_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
 
         // Heap Sort
         System.out.println("Heap sort | Melhor Caso:");
@@ -457,7 +454,7 @@ public class OrdenationsByAchievements {
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_selection_piorCaso.csv", ordenArray);
+        writeToCvs("games_achievements_selectionSort_piorCaso.csv", ordenArray);
 
         // Insertion Sort
         System.out.println("Insertion sort | Pior Caso:");
@@ -478,30 +475,23 @@ public class OrdenationsByAchievements {
         writeToCvs("games_achievements_mergeSort_piorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Pior Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort | Pior Caso: ");
         startTime = System.currentTimeMillis();
-        try {
-            ordenArray = quickSortByAchievements(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
-        } catch (StackOverflowError e) {
-            System.err.println("StackOverflowError capturado: " + e.getMessage());
-        }
-        //ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+        ordenArray = quickSortByAchievements(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_quickSort_piorCaso.csv", ordenArray);*/
+        writeToCvs("games_achievements_quickSort_piorCaso.csv", ordenArray);
 
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Pior Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort (Mediana de 3) | Pior Caso: ");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByAchievementsMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_achievements_quickSort_mediana_de_3_piorCaso.csv", ordenArray);*/
+        writeToCvs("games_achievements_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
 
         // Heap Sort
         System.out.println("Heap sort | Pior Caso:");

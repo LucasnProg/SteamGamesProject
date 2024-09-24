@@ -121,11 +121,16 @@ public class OrdenationsByDate {
     }
 
     public static CSVRecord[] quickSortByDates(CSVRecord[] array, int first, int last) {
-        if (first < last) {
+        while (first < last) {
             int pivotPosition = partition(array, first, last);
 
-            quickSortByDates(array, first, pivotPosition - 1);
-            quickSortByDates(array, pivotPosition + 1, last);
+            if (pivotPosition - first < last - pivotPosition) {
+                quickSortByDates(array, first, pivotPosition - 1);
+                first = pivotPosition + 1;
+            } else {
+                quickSortByDates(array, pivotPosition + 1, last);
+                last = pivotPosition - 1;
+            }
         }
         return array;
     }
@@ -378,19 +383,13 @@ public class OrdenationsByDate {
         writeToCvs("games_release_date_mergeSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Melhor Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort | Melhor Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
-        try {
-            ordenArray = quickSortByDates(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
-        } catch (StackOverflowError e) {
-            System.err.println("StackOverflowError capturado: " + e.getMessage());
-        }
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_release_date_quickSort_melhorCaso.csv", ordenArray);*/
+        writeToCvs("games_release_date_quickSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort com Mediana de 3
         System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
@@ -444,20 +443,13 @@ public class OrdenationsByDate {
         writeToCvs("games_release_date_mergeSort_piorCaso.csv", ordenArray);
 
         // Quick Sort
-
-        System.out.println("Quick sort | Pior Caso: \n");
-        /*
+        System.out.println("Quick sort | Pior Caso: ");
         startTime = System.currentTimeMillis();
-        try {
-            ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
-        } catch (StackOverflowError e) {
-            System.err.println("StackOverflowError capturado: " + e.getMessage());
-        }
         ordenArray = quickSortByDates(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_release_date_quickSort_piorCaso.csv", ordenArray);*/
+        writeToCvs("games_release_date_quickSort_piorCaso.csv", ordenArray);
 
 
         // Quick Sort com Mediana de 3

@@ -107,11 +107,16 @@ public class OrdenationsByPrice {
     }
 
     public static CSVRecord[] quickSortByPrices(CSVRecord[] array, int first, int last) {
-        if (first < last) {
+        while (first < last) {
             int pivotPosition = partition(array, first, last);
 
-            quickSortByPrices(array, first, pivotPosition - 1);
-            quickSortByPrices(array, pivotPosition + 1, last);
+            if (pivotPosition - first < last - pivotPosition) {
+                quickSortByPrices(array, first, pivotPosition - 1);
+                first = pivotPosition + 1;
+            } else {
+                quickSortByPrices(array, pivotPosition + 1, last);
+                last = pivotPosition - 1;
+            }
         }
         return array;
     }
@@ -139,7 +144,6 @@ public class OrdenationsByPrice {
         array[last] = temp;
 
         double pivot = Double.parseDouble(array[last].get(6));
-
         int iterator = first - 1;
 
         for (int index = first; index < last; index++) {
@@ -161,16 +165,20 @@ public class OrdenationsByPrice {
     }
 
     public static CSVRecord[] quickSortByPricesMedianOf3(CSVRecord[] array, int first, int last) {
-        if (first < last) {
+        while (first < last) {
             int pivotPosition = partitionMedian3(array, first, last);
 
-            quickSortByPricesMedianOf3(array, first, pivotPosition - 1);
-            quickSortByPricesMedianOf3(array, pivotPosition + 1, last);
+            if (pivotPosition - first < last - pivotPosition) {
+                quickSortByPricesMedianOf3(array, first, pivotPosition - 1);
+                first = pivotPosition + 1;
+            } else {
+                quickSortByPricesMedianOf3(array, pivotPosition + 1, last);
+                last = pivotPosition - 1;
+            }
         }
 
         return array;
     }
-
 
     public static CSVRecord[] heapSortByPrices(CSVRecord[] array) {
         int n = array.length;
@@ -302,24 +310,22 @@ public class OrdenationsByPrice {
         writeToCvs("games_price_mergeSort_medioCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Médio Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort | Médio Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPrices(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_medioCaso.csv", ordenArray);*/
+        writeToCvs("games_price_quickSort_medioCaso.csv", ordenArray);
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Médio Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort (Mediana de 3) | Médio Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPricesMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_mediana_de_3_medioCaso.csv", ordenArray);*/
+        writeToCvs("games_price_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
 
         // Heap Sort
         System.out.println("Heap sort | Médio Caso:");
@@ -365,29 +371,22 @@ public class OrdenationsByPrice {
         writeToCvs("games_price_mergeSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Melhor Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort | Melhor Caso:");
         startTime = System.currentTimeMillis();
-        //ordenArray = quickSortByPrices(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
-        try {
-            ordenArray = quickSortByPrices(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
-        } catch (StackOverflowError e) {
-            System.err.println("StackOverflowError capturado: " + e.getMessage());
-        }
+        ordenArray = quickSortByPrices(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_melhorCaso.csv", ordenArray);*/
+        writeToCvs("games_price_quickSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Melhor Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPricesMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);*/
+        writeToCvs("games_price_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
 
         // Heap Sort
         System.out.println("Heap sort | Melhor Caso:");
@@ -432,30 +431,23 @@ public class OrdenationsByPrice {
         writeToCvs("games_price_mergeSort_piorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Pior Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort | Pior Caso: ");
         startTime = System.currentTimeMillis();
-        try {
-            ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
-        } catch (StackOverflowError e) {
-            System.err.println("StackOverflowError capturado: " + e.getMessage());
-        }
-        //ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+        ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_piorCaso.csv", ordenArray);*/
+        writeToCvs("games_price_quickSort_piorCaso.csv", ordenArray);
 
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Pior Caso: \n(STACKOVERFLOW)");
-        /*
+        System.out.println("Quick sort (Mediana de 3) | Pior Caso:");
         startTime = System.currentTimeMillis();
         ordenArray = quickSortByPricesMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
-        writeToCvs("games_price_quickSort_mediana_de_3_piorCaso.csv", ordenArray);*/
+        writeToCvs("games_price_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
 
         // Heap Sort
         System.out.println("Heap sort | Pior Caso:");
