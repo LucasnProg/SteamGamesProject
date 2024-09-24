@@ -8,6 +8,6 @@ public class Main {
         OrdenationsByDate.mainOrdenationsByDate();
         OrdenationsByPrice.mainOrdenationsByPrice();
         OrdenationsByAchievements.mainOrdenationsByAchievements();
-
+        
     }
 }
