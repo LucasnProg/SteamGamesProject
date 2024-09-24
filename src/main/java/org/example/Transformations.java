@@ -114,27 +114,15 @@ public class Transformations {
     public static void mainTransformations() throws IOException {
         Path pathToGames = Paths.get("src\\main\\java\\database\\games.csv");
         Path pathToGamesFormated = Paths.get("src\\main\\java\\database\\games_formated_release_data.csv");
+        System.out.println("Fazendo a primeira transformação...");
         toReleaseDate(pathToGames);
+        System.out.println("Pronto\n");
+        System.out.println("Fazendo a segunda transformação...");
         getLinuxGames(pathToGamesFormated);
+        System.out.println("Pronto\n");
+        System.out.println("Fazendo a ultima transformação...");
         getPortugueseGames(pathToGamesFormated);
-        //Path path = Paths.get("src\\main\\java\\database\\games_achievements_heapSort_medioCaso.csv");
-        //checkOrders(path);
-
-    }
-    public static void checkOrders(Path filePath) throws IOException {
-        File games = filePath.toFile();
-
-        try (
-                Reader reader = new FileReader(games);
-                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
-        ) {
-            for (CSVRecord record : csvParser) {
-                System.out.print(record.get(26)+" | ");
-            }
-        } catch (IOException e) {
-            System.out.println("Erro: "+e.getMessage());
-        }
-
+        System.out.println("Pronto\n");
     }
 }
 

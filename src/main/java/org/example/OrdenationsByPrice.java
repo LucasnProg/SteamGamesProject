@@ -61,25 +61,25 @@ public class OrdenationsByPrice {
     }
 
     private static void merge(CSVRecord[] array, CSVRecord[] left, CSVRecord[] right) {
-        int i = 0, j = 0, k = 0;
+        int index = 0, secondIndex = 0, iterator = 0;
 
-        while (i < left.length && j < right.length) {
-            double leftPrice = Double.parseDouble(left[i].get(6));
-            double rightPrice = Double.parseDouble(right[j].get(6));
+        while (index < left.length && secondIndex < right.length) {
+            double leftPrice = Double.parseDouble(left[index].get(6));
+            double rightPrice = Double.parseDouble(right[secondIndex].get(6));
 
             if (leftPrice <= rightPrice) {
-                array[k++] = left[i++];
+                array[iterator++] = left[index++];
             } else {
-                array[k++] = right[j++];
+                array[iterator++] = right[secondIndex++];
             }
         }
 
-        while (i < left.length) {
-            array[k++] = left[i++];
+        while (index < left.length) {
+            array[iterator++] = left[index++];
         }
 
-        while (j < right.length) {
-            array[k++] = right[j++];
+        while (secondIndex < right.length) {
+            array[iterator++] = right[secondIndex++];
         }
     }
 
@@ -181,43 +181,43 @@ public class OrdenationsByPrice {
     }
 
     public static CSVRecord[] heapSortByPrices(CSVRecord[] array) {
-        int n = array.length;
+        int length = array.length;
 
-        for (int i = n / 2 - 1; i >= 0; i--) {
-            heapify(array, n, i);
+        for (int index = length / 2 - 1; index >= 0; index--) {
+            heapify(array, length, index);
         }
 
-        for (int i = n - 1; i > 0; i--) {
-            CSVRecord temp = array[i];
-            array[i] = array[0];
+        for (int index = length - 1; index > 0; index--) {
+            CSVRecord temp = array[index];
+            array[index] = array[0];
             array[0] = temp;
 
-            heapify(array, i, 0);
+            heapify(array, index, 0);
         }
         return array;
     }
 
-    private static void heapify(CSVRecord[] array, int n, int i) {
-        int largest = i;
-        int left = 2 * i + 1;
-        int right = 2 * i + 2;
+    private static void heapify(CSVRecord[] array, int length, int index) {
+        int largest = index;
+        int left = 2 * index + 1;
+        int right = 2 * index + 2;
 
         double largestPrice = Double.parseDouble(array[largest].get(6));
 
-        if (left < n && Double.parseDouble(array[left].get(6)) > largestPrice) {
+        if (left < length && Double.parseDouble(array[left].get(6)) > largestPrice) {
             largest = left;
         }
 
-        if (right < n && Double.parseDouble(array[right].get(6)) > Double.parseDouble(array[largest].get(6))) {
+        if (right < length && Double.parseDouble(array[right].get(6)) > Double.parseDouble(array[largest].get(6))) {
             largest = right;
         }
 
-        if (largest != i) {
-            CSVRecord swap = array[i];
-            array[i] = array[largest];
+        if (largest != index) {
+            CSVRecord swap = array[index];
+            array[index] = array[largest];
             array[largest] = swap;
 
-            heapify(array, n, largest);
+            heapify(array, length, largest);
         }
     }
 
@@ -231,8 +231,8 @@ public class OrdenationsByPrice {
             List<CSVRecord> records = csvParser.getRecords();
 
             CSVRecord[] array = new CSVRecord[records.size()];
-            for (int i = 0; i < records.size(); i++) {
-                array[i] = records.get(i);
+            for (int index = 0; index < records.size(); index++) {
+                array[index] = records.get(index);
             }
             return array;
         } catch (IOException e) {
@@ -253,8 +253,8 @@ public class OrdenationsByPrice {
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
         ) {
             printer.printRecord(csvParser.getHeaderMap().keySet());
-            for (int i = 0; i < array.length; i++) {
-                printer.printRecord(array[i]);
+            for (int index = 0; index < array.length; index++) {
+                printer.printRecord(array[index]);
             }
         }catch (IOException e) {
             System.out.println(e.getMessage());
@@ -278,185 +278,258 @@ public class OrdenationsByPrice {
         Path pathToGames = Paths.get("src\\main\\java\\database\\games.csv");
         CSVRecord[] arrayToOrder = getArray(pathToGames);
         assert arrayToOrder != null;
-        long startTime, endTime, duration;
+        long startTime, endTime, duration, memoryBefore, memoryAfter, memoryUsed;
         CSVRecord[] ordenArray;
-        System.out.println("Ordenações por preços Medio caso:");
+        System.out.println("Ordenações por preços para o dataSet crescente:\n");
 
         // Selection Sort
-        System.out.println("Selection sort | Médio Caso:");
+        System.out.println("Selection sort | Dataset desordenado:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = selectionSortByPrices(arrayToOrder.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter-memoryBefore)/(1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_selectionSort_medioCaso.csv", ordenArray);
 
         // Insertion Sort
-        System.out.println("Insertion sort | Médio Caso:");
+        System.out.println("Insertion sort | Dataset desordenado:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = insertionSortByPrices(arrayToOrder.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_insertionSort_medioCaso.csv", ordenArray);
 
         // Merge Sort
-        System.out.println("Merge sort | Médio Caso:");
+        System.out.println("Merge sort | Dataset desordenado:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = mergeSortByPrices(arrayToOrder.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_mergeSort_medioCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Médio Caso:");
+        System.out.println("Quick sort | Dataset desordenado:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = quickSortByPrices(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_medioCaso.csv", ordenArray);
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Médio Caso:");
+        System.out.println("Quick sort (Mediana de 3) | Dataset desordenado:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = quickSortByPricesMedianOf3(arrayToOrder.clone(), 0, arrayToOrder.length - 1);
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
 
         // Heap Sort
-        System.out.println("Heap sort | Médio Caso:");
+        System.out.println("Heap sort | Dataset desordenado:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = heapSortByPrices(arrayToOrder.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_heapSort_medioCaso.csv", ordenArray);
 
-        System.out.println("\nPS: Para analise de melhor caso, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
+
+        System.out.println("\nPS: Para analise de Dataset crescente, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
         Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_price_heapSort_medioCaso.csv");
 
         CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
         assert arrayBetterCase != null;
-        System.out.println("Ordenações por preços Melhor caso:");
+        System.out.println("Ordenações por preços Dataset crescente:\n");
 
         // Selection Sort
-        System.out.println("Selection sort | Melhor Caso:");
+        System.out.println("Selection sort | Dataset crescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = selectionSortByPrices(arrayBetterCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_selectionSort_melhorCaso.csv", ordenArray);
 
         // Insertion Sort
-        System.out.println("Insertion sort | Melhor Caso:");
+        System.out.println("Insertion sort | Dataset crescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = insertionSortByPrices(arrayBetterCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_insertionSort_melhorCaso.csv", ordenArray);
 
         // Merge Sort
-        System.out.println("Merge sort | Melhor Caso:");
+        System.out.println("Merge sort | Dataset crescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = mergeSortByPrices(arrayBetterCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_mergeSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Melhor Caso:");
+        System.out.println("Quick sort | Dataset crescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = quickSortByPrices(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_melhorCaso.csv", ordenArray);
 
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Melhor Caso:");
+        System.out.println("Quick sort (Mediana de 3) | Dataset crescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = quickSortByPricesMedianOf3(arrayBetterCase.clone(), 0, arrayBetterCase.length - 1);
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
 
         // Heap Sort
-        System.out.println("Heap sort | Melhor Caso:");
+        System.out.println("Heap sort | Dataset crescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = heapSortByPrices(arrayBetterCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_heapSort_melhorCaso.csv", ordenArray);
 
-        System.out.println("\nPS: Para analise de Pior caso, usaremos o array em ordem descrescente.");
+        System.out.println("\nPS: Para analise de Dataset decrescente, usaremos o array ja ordenado invertido.");
         CSVRecord[] arrayWorstCase = getArray(pathToCsvOrden);
         assert arrayWorstCase != null;
         reverseArray(arrayWorstCase);
-        System.out.println("Ordenações por Preço Pior caso:");
+        System.out.println("Ordenações por Preço Dataset decrescente:\n");
 
         // Selection Sort
-        System.out.println("Selection sort | Pior Caso:");
+        System.out.println("Selection sort | Dataset decrescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = selectionSortByPrices(arrayWorstCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_selectionSort_piorCaso.csv", ordenArray);
 
         // Insertion Sort
-        System.out.println("Insertion sort | Pior Caso:");
+        System.out.println("Insertion sort | Dataset decrescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = insertionSortByPrices(arrayWorstCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_insertionSort_piorCaso.csv", ordenArray);
 
         // Merge Sort
-        System.out.println("Merge sort | Pior Caso:");
+        System.out.println("Merge sort | Dataset decrescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = mergeSortByPrices(arrayWorstCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_mergeSort_piorCaso.csv", ordenArray);
 
         // Quick Sort
-        System.out.println("Quick sort | Pior Caso: ");
+        System.out.println("Quick sort | Dataset decrescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = quickSortByPrices(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_piorCaso.csv", ordenArray);
 
-
         // Quick Sort com Mediana de 3
-        System.out.println("Quick sort (Mediana de 3) | Pior Caso:");
+        System.out.println("Quick sort (Mediana de 3) | Dataset decrescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = quickSortByPricesMedianOf3(arrayWorstCase.clone(), 0, arrayWorstCase.length - 1);
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
 
         // Heap Sort
-        System.out.println("Heap sort | Pior Caso:");
+        System.out.println("Heap sort | Dataset decrescente:");
         startTime = System.currentTimeMillis();
+        memoryBefore = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         ordenArray = heapSortByPrices(arrayWorstCase.clone());
+        memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
+        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
+        System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_heapSort_piorCaso.csv", ordenArray);
+
 
     }
 }
