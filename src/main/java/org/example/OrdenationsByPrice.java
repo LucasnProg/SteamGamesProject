@@ -242,7 +242,7 @@ public class OrdenationsByPrice {
 
     }
     public static void writeToCvs (String fileName,CSVRecord[] array) throws IOException {
-        Path databasePath = Paths.get("src\\main\\java\\database");
+        Path databasePath = Paths.get("src","main","java","database");
         File outputFile = new File(databasePath.toString(), fileName);
         File fileToGetHeader = new File(databasePath.toString(),"portuguese_supported_games.csv");
 
@@ -275,7 +275,7 @@ public class OrdenationsByPrice {
     }
     public static void mainOrdenationsByPrice() throws IOException {
 
-        Path pathToGames = Paths.get("src\\main\\java\\database\\games.csv");
+        Path pathToGames = Paths.get("src","main","java","database","games.csv");
         CSVRecord[] arrayToOrder = getArray(pathToGames);
         assert arrayToOrder != null;
         long startTime, endTime, duration, memoryBefore, memoryAfter, memoryUsed;
@@ -290,7 +290,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter-memoryBefore)/(1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_selectionSort_medioCaso.csv", ordenArray);
@@ -303,7 +303,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_insertionSort_medioCaso.csv", ordenArray);
@@ -316,7 +316,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_mergeSort_medioCaso.csv", ordenArray);
@@ -329,7 +329,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_medioCaso.csv", ordenArray);
@@ -342,7 +342,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_mediana_de_3_medioCaso.csv", ordenArray);
@@ -355,14 +355,15 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_heapSort_medioCaso.csv", ordenArray);
 
 
+
         System.out.println("\nPS: Para analise de Dataset crescente, usaremos o array ja ordenado por qualquer um dos métodos anteriores.");
-        Path pathToCsvOrden = Paths.get("src\\main\\java\\database\\games_price_heapSort_medioCaso.csv");
+        Path pathToCsvOrden = Paths.get("src","main","java","database","games_price_heapSort_medioCaso.csv");
 
         CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
         assert arrayBetterCase != null;
@@ -376,7 +377,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_selectionSort_melhorCaso.csv", ordenArray);
@@ -389,7 +390,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_insertionSort_melhorCaso.csv", ordenArray);
@@ -402,7 +403,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_mergeSort_melhorCaso.csv", ordenArray);
@@ -415,7 +416,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_melhorCaso.csv", ordenArray);
@@ -428,7 +429,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_mediana_de_3_melhorCaso.csv", ordenArray);
@@ -441,10 +442,11 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_heapSort_melhorCaso.csv", ordenArray);
+
 
         System.out.println("\nPS: Para analise de Dataset decrescente, usaremos o array ja ordenado invertido.");
         CSVRecord[] arrayWorstCase = getArray(pathToCsvOrden);
@@ -460,7 +462,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_selectionSort_piorCaso.csv", ordenArray);
@@ -473,7 +475,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_insertionSort_piorCaso.csv", ordenArray);
@@ -486,7 +488,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_mergeSort_piorCaso.csv", ordenArray);
@@ -499,7 +501,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_piorCaso.csv", ordenArray);
@@ -512,7 +514,7 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_quickSort_mediana_de_3_piorCaso.csv", ordenArray);
@@ -525,10 +527,11 @@ public class OrdenationsByPrice {
         memoryAfter = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
-        memoryUsed = (memoryAfter - memoryBefore) / (1024 * 1024);
+        memoryUsed = Math.abs((memoryAfter - memoryBefore) / (1024 * 1024));
         System.out.println("Tempo de execução: " + duration + " Millisegundos");
         System.out.println("Memória utilizada: " + memoryUsed + " Megabytes\n");
         writeToCvs("games_price_heapSort_piorCaso.csv", ordenArray);
+
 
 
     }
