@@ -280,7 +280,7 @@ public class OrdenationsByPrice {
         assert arrayToOrder != null;
         long startTime, endTime, duration, memoryBefore, memoryAfter, memoryUsed;
         CSVRecord[] ordenArray;
-        System.out.println("Ordenações por preços para o dataSet crescente:\n");
+        System.out.println("Ordenações por preços para o dataSet desordenado:\n");
 
         // Selection Sort
         System.out.println("Selection sort | Dataset desordenado:");

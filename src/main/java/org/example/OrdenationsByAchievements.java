@@ -305,7 +305,7 @@ public class OrdenationsByAchievements {
         assert arrayToOrder != null;
         long startTime, endTime, duration, memoryBefore, memoryAfter, memoryUsed;
         CSVRecord[] ordenArray;
-        System.out.println("Ordenações por achievements Medio caso:\n");
+        System.out.println("Ordenações por achievements desordenado:\n");
 
         // Selection Sort
         System.out.println("Selection sort | DataSet Desordenado:");
@@ -404,7 +404,7 @@ public class OrdenationsByAchievements {
 
         CSVRecord[] arrayBetterCase = getArray(pathToCsvOrden);
         assert arrayBetterCase != null;
-        System.out.println("Ordenações por achievements DataSet Ordenado:\n");
+        System.out.println("Ordenações por achievements DataSet ordenado:\n");
 
         // Selection Sort
         System.out.println("Selection sort | DataSet Ordenado:");
